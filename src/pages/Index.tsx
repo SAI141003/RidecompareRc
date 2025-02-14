@@ -2,10 +2,48 @@
 import { MapPin, Navigation, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import Map from "@/components/Map";
+import RideOptions from "@/components/RideOptions";
+import { toast } from "sonner";
+
+// Mock data for demonstration
+const mockRideOptions = [
+  {
+    id: "1",
+    name: "UberX",
+    price: 25.50,
+    time: 4,
+    provider: "uber" as const,
+  },
+  {
+    id: "2",
+    name: "Lyft",
+    price: 23.75,
+    time: 5,
+    provider: "lyft" as const,
+  },
+  {
+    id: "3",
+    name: "Uber Black",
+    price: 45.00,
+    time: 6,
+    provider: "uber" as const,
+  },
+];
 
 const Index = () => {
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
+  const [selectedRide, setSelectedRide] = useState<string>();
+  const [showResults, setShowResults] = useState(false);
+
+  const handleSearch = () => {
+    if (!pickup || !dropoff) {
+      toast.error("Please enter both pickup and dropoff locations");
+      return;
+    }
+    setShowResults(true);
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -26,9 +64,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center hero-pattern overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center hero-pattern overflow-hidden pb-12">
         <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="text-center space-y-6 fade-up opacity-0 mb-12">
               <span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/5 text-primary rounded-full animate-fade-in">
@@ -67,11 +105,32 @@ const Index = () => {
                 />
               </div>
 
-              <Button className="w-full py-6 rounded-xl text-base font-semibold">
+              <Button 
+                className="w-full py-6 rounded-xl text-base font-semibold"
+                onClick={handleSearch}
+              >
                 <Search className="mr-2 h-5 w-5" />
                 Compare Rides
               </Button>
             </div>
+
+            {/* Results Section */}
+            {showResults && (
+              <div className="mt-8 space-y-6 fade-up opacity-0">
+                <Map />
+                <div className="glass rounded-2xl p-6">
+                  <h2 className="text-xl font-semibold mb-4">Available Rides</h2>
+                  <RideOptions
+                    options={mockRideOptions}
+                    onSelect={(option) => setSelectedRide(option.id)}
+                    selectedId={selectedRide}
+                  />
+                  {selectedRide && (
+                    <Button className="w-full mt-4">Book Ride</Button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
