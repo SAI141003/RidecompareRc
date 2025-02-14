@@ -1,8 +1,12 @@
 
-import { ArrowRight } from "lucide-react";
-import { useEffect } from "react";
+import { MapPin, Navigation, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
+  const [pickup, setPickup] = useState("");
+  const [dropoff, setDropoff] = useState("");
+
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -20,36 +24,65 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center hero-pattern overflow-hidden">
         <div className="container mx-auto px-4">
-          <div className="text-center space-y-6 fade-up opacity-0">
-            <span className="inline-block px-4 py-1.5 text-sm font-medium bg-secondary rounded-full animate-fade-in">
-              Welcome to the future
-            </span>
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              Create something
-              <span className="block text-primary">extraordinary</span>
-            </h1>
-            <p className="max-w-lg mx-auto text-muted-foreground text-lg">
-              Experience the perfect blend of form and function in every interaction.
-            </p>
-            <button className="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-primary rounded-full hover:bg-primary/90 transition-colors duration-200">
-              Get Started
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </button>
+          <div className="max-w-2xl mx-auto">
+            {/* Header */}
+            <div className="text-center space-y-6 fade-up opacity-0 mb-12">
+              <span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/5 text-primary rounded-full animate-fade-in">
+                Compare and Save
+              </span>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+                Find the best ride at the
+                <span className="block text-primary">best price</span>
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Compare prices across multiple ride-sharing services instantly
+              </p>
+            </div>
+
+            {/* Search Form */}
+            <div className="glass rounded-2xl p-6 space-y-4 fade-up opacity-0">
+              <div className="relative">
+                <MapPin className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Enter pickup location"
+                  value={pickup}
+                  onChange={(e) => setPickup(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-input bg-background"
+                />
+              </div>
+              
+              <div className="relative">
+                <Navigation className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Enter destination"
+                  value={dropoff}
+                  onChange={(e) => setDropoff(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-input bg-background"
+                />
+              </div>
+
+              <Button className="w-full py-6 rounded-xl text-base font-semibold">
+                <Search className="mr-2 h-5 w-5" />
+                Compare Rides
+              </Button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-secondary/50">
+      <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 fade-up opacity-0">
-            <h2 className="text-3xl font-bold">Features</h2>
+            <h2 className="text-3xl font-bold">Why Choose RideCompare?</h2>
             <p className="mt-4 text-muted-foreground">
-              Discover what makes our platform unique
+              Compare prices and find the best ride for your journey
             </p>
           </div>
 
@@ -70,41 +103,25 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center fade-up opacity-0">
-            <h2 className="text-3xl font-bold mb-6">Ready to get started?</h2>
-            <p className="text-muted-foreground mb-8">
-              Join us in creating the next generation of digital experiences.
-            </p>
-            <button className="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-primary rounded-full hover:bg-primary/90 transition-colors duration-200">
-              Start Building
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
 
 const features = [
   {
-    title: "Intuitive Design",
-    description: "Experience a user interface that feels natural and effortless.",
-    icon: <ArrowRight className="h-6 w-6 text-primary" />,
+    title: "Best Prices",
+    description: "Compare prices across multiple ride-sharing services in real-time.",
+    icon: <Search className="h-6 w-6 text-primary" />,
   },
   {
-    title: "Powerful Features",
-    description: "Access advanced capabilities with just a few clicks.",
-    icon: <ArrowRight className="h-6 w-6 text-primary" />,
+    title: "Real-Time ETAs",
+    description: "Get accurate arrival times and track your ride in real-time.",
+    icon: <Navigation className="h-6 w-6 text-primary" />,
   },
   {
-    title: "Seamless Integration",
-    description: "Connect and extend functionality with ease.",
-    icon: <ArrowRight className="h-6 w-6 text-primary" />,
+    title: "Smart Routes",
+    description: "AI-powered route suggestions for the best travel experience.",
+    icon: <MapPin className="h-6 w-6 text-primary" />,
   },
 ];
 
