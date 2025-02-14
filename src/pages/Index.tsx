@@ -1,12 +1,12 @@
-
-import { MapPin, Navigation, Search } from "lucide-react";
+import { MapPin, Navigation, Search, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Map from "@/components/Map";
 import RideOptions from "@/components/RideOptions";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
-// Mock data for demonstration
 const mockRideOptions = [
   {
     id: "1",
@@ -36,6 +36,16 @@ const Index = () => {
   const [dropoff, setDropoff] = useState("");
   const [selectedRide, setSelectedRide] = useState<string>();
   const [showResults, setShowResults] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/auth");
+    } catch (error: any) {
+      toast.error("Error logging out");
+    }
+  };
 
   const handleSearch = () => {
     if (!pickup || !dropoff) {
@@ -63,11 +73,21 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      {/* Hero Section */}
+      <div className="absolute top-4 right-4 z-10">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleLogout}
+          className="flex items-center gap-2"
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
+      </div>
+
       <section className="relative min-h-screen flex items-center justify-center hero-pattern overflow-hidden pb-12">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            {/* Header */}
             <div className="text-center space-y-6 fade-up opacity-0 mb-12">
               <span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/5 text-primary rounded-full animate-fade-in">
                 Compare and Save
@@ -81,7 +101,6 @@ const Index = () => {
               </p>
             </div>
 
-            {/* Search Form */}
             <div className="glass rounded-2xl p-6 space-y-4 fade-up opacity-0">
               <div className="relative">
                 <MapPin className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
@@ -114,7 +133,6 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* Results Section */}
             {showResults && (
               <div className="mt-8 space-y-6 fade-up opacity-0">
                 <Map />
@@ -135,7 +153,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 fade-up opacity-0">
