@@ -9,6 +9,78 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      fraud_detection_logs: {
+        Row: {
+          created_at: string
+          details: Json | null
+          id: string
+          incident_type: string
+          is_resolved: boolean | null
+          severity: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          id?: string
+          incident_type: string
+          is_resolved?: boolean | null
+          severity: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          id?: string
+          incident_type?: string
+          is_resolved?: boolean | null
+          severity?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      price_predictions: {
+        Row: {
+          confidence_score: number
+          created_at: string
+          day_of_week: number
+          hour_of_day: number
+          id: string
+          location_from: string
+          location_to: string
+          predicted_price: number
+          prediction_time: string
+          updated_at: string | null
+        }
+        Insert: {
+          confidence_score: number
+          created_at?: string
+          day_of_week: number
+          hour_of_day: number
+          id?: string
+          location_from: string
+          location_to: string
+          predicted_price: number
+          prediction_time?: string
+          updated_at?: string | null
+        }
+        Update: {
+          confidence_score?: number
+          created_at?: string
+          day_of_week?: number
+          hour_of_day?: number
+          id?: string
+          location_from?: string
+          location_to?: string
+          predicted_price?: number
+          prediction_time?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -131,6 +203,36 @@ export type Database = {
         }
         Relationships: []
       }
+      surge_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          location: string
+          threshold_percentage: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          location: string
+          threshold_percentage: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          location?: string
+          threshold_percentage?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_addresses: {
         Row: {
           address_type: string
@@ -181,6 +283,45 @@ export type Database = {
           },
         ]
       }
+      user_ride_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          max_price_limit: number | null
+          max_wait_time: number | null
+          preferred_provider:
+            | Database["public"]["Enums"]["ride_provider"]
+            | null
+          preferred_ride_type: Database["public"]["Enums"]["ride_type"] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_price_limit?: number | null
+          max_wait_time?: number | null
+          preferred_provider?:
+            | Database["public"]["Enums"]["ride_provider"]
+            | null
+          preferred_ride_type?: Database["public"]["Enums"]["ride_type"] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_price_limit?: number | null
+          max_wait_time?: number | null
+          preferred_provider?:
+            | Database["public"]["Enums"]["ride_provider"]
+            | null
+          preferred_ride_type?: Database["public"]["Enums"]["ride_type"] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -189,7 +330,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      ride_provider: "uber" | "lyft" | "other"
       ride_status: "pending" | "confirmed" | "completed" | "cancelled"
+      ride_type: "economy" | "premium" | "luxury"
     }
     CompositeTypes: {
       [_ in never]: never
