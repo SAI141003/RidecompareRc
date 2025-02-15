@@ -5,7 +5,6 @@ import { useAuth } from "@/components/AuthProvider";
 import { BottomNav } from "@/components/BottomNav";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileMenu } from "@/components/profile/ProfileMenu";
-import { toast } from "sonner";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -22,7 +21,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="p-6 pb-24">
         <ProfileHeader 
           username={user.email?.split('@')[0]?.toUpperCase() || 'USER'} 
