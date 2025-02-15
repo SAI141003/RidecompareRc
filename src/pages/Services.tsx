@@ -3,26 +3,26 @@ import { Header } from "@/components/Header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Car, Package, Key, Calendar, UserMinus, Bus, Users, 
-  UtensilsCrossed, ShoppingBag, Wine, Mouse, Clock
+  Search, Navigation, MapPin, Clock, Rocket, Package,
+  UserMinus, Bus, Users, UtensilsCrossed, ShoppingBag, Wine
 } from "lucide-react";
 
 const Services = () => {
   const transportServices = [
-    { icon: <Car className="w-8 h-8" />, name: "Ride", promo: true },
-    { icon: <Package className="w-8 h-8" />, name: "Courier", promo: true },
-    { icon: <Key className="w-8 h-8" />, name: "Rental Cars" },
-    { icon: <Calendar className="w-8 h-8" />, name: "Reserve" },
-    { icon: <UserMinus className="w-8 h-8" />, name: "Teens" },
-    { icon: <Bus className="w-8 h-8" />, name: "Transit" },
-    { icon: <Users className="w-8 h-8" />, name: "Group Ride" },
+    { icon: <Search className="h-6 w-6 text-primary" />, name: "Compare Rides", promo: true },
+    { icon: <Navigation className="h-6 w-6 text-primary" />, name: "Track Rides", promo: true },
+    { icon: <MapPin className="h-6 w-6 text-primary" />, name: "Smart Routes" },
+    { icon: <Clock className="h-6 w-6 text-primary" />, name: "Schedule" },
+    { icon: <UserMinus className="h-6 w-6 text-primary" />, name: "Teens" },
+    { icon: <Bus className="h-6 w-6 text-primary" />, name: "Transit" },
+    { icon: <Users className="h-6 w-6 text-primary" />, name: "Group Ride" },
   ];
 
   const deliveryServices = [
-    { icon: <UtensilsCrossed className="w-8 h-8" />, name: "Food", promo: true },
-    { icon: <ShoppingBag className="w-8 h-8" />, name: "Grocery", promo: true },
-    { icon: <Wine className="w-8 h-8" />, name: "Alcohol", promo: true },
-    { icon: <Mouse className="w-8 h-8" />, name: "Electronics" },
+    { icon: <UtensilsCrossed className="h-6 w-6 text-primary" />, name: "Food", promo: true },
+    { icon: <ShoppingBag className="h-6 w-6 text-primary" />, name: "Grocery", promo: true },
+    { icon: <Wine className="h-6 w-6 text-primary" />, name: "Alcohol", promo: true },
+    { icon: <Package className="h-6 w-6 text-primary" />, name: "Electronics" },
   ];
 
   return (
@@ -41,7 +41,7 @@ const Services = () => {
                   Request Reserve
                 </Button>
               </div>
-              <Clock className="w-16 h-16 text-muted-foreground" />
+              <Rocket className="w-16 h-16 text-primary" />
             </div>
           </Card>
 
@@ -49,7 +49,9 @@ const Services = () => {
             {transportServices.map((service, index) => (
               <div key={index} className="relative service-card">
                 {service.promo && <span className="promo-badge">Promo</span>}
-                {service.icon}
+                <div className="h-12 w-12 rounded-xl bg-primary/5 flex items-center justify-center mb-4">
+                  {service.icon}
+                </div>
                 <span className="text-sm">{service.name}</span>
               </div>
             ))}
@@ -62,7 +64,9 @@ const Services = () => {
             {deliveryServices.map((service, index) => (
               <div key={index} className="relative service-card">
                 {service.promo && <span className="promo-badge">Promo</span>}
-                {service.icon}
+                <div className="h-12 w-12 rounded-xl bg-primary/5 flex items-center justify-center mb-4">
+                  {service.icon}
+                </div>
                 <span className="text-sm">{service.name}</span>
               </div>
             ))}

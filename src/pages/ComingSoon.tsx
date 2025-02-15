@@ -1,21 +1,22 @@
+
 import { Header } from "@/components/Header";
-import { Clock, Package, Rocket } from "lucide-react";
+import { Search, Navigation, MapPin } from "lucide-react";
 
 const comingSoonFeatures = [
   {
-    title: "Scheduled Rides",
-    description: "Plan ahead by scheduling your rides in advance.",
-    icon: <Clock className="h-6 w-6 text-primary" />,
+    title: "Compare Rides",
+    description: "Compare prices across multiple ride-sharing services in real-time.",
+    icon: <Search className="h-6 w-6 text-primary" />,
   },
   {
-    title: "Group Rides",
-    description: "Share rides with friends and split costs automatically.",
-    icon: <Package className="h-6 w-6 text-primary" />,
+    title: "Track Rides",
+    description: "Get accurate arrival times and track your ride in real-time.",
+    icon: <Navigation className="h-6 w-6 text-primary" />,
   },
   {
-    title: "Express Pickup",
-    description: "Premium service for faster pickups and priority matching.",
-    icon: <Rocket className="h-6 w-6 text-primary" />,
+    title: "Smart Routes",
+    description: "AI-powered route suggestions for the best travel experience.",
+    icon: <MapPin className="h-6 w-6 text-primary" />,
   },
 ];
 
