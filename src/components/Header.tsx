@@ -1,23 +1,12 @@
 
-import { LogOut, UserCircle, Home, ArrowLeft } from "lucide-react";
+import { UserCircle, Home, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const showBackButton = location.pathname !== '/';
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate("/auth");
-    } catch (error: any) {
-      toast.error("Error logging out");
-    }
-  };
 
   return (
     <div className="absolute top-4 w-full px-4 z-10">
@@ -47,26 +36,15 @@ export const Header = () => {
           )}
         </div>
         
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/profile")}
-            className="flex items-center gap-2"
-          >
-            <UserCircle className="h-4 w-4" />
-            Profile
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            className="flex items-center gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/profile")}
+          className="flex items-center gap-2"
+        >
+          <UserCircle className="h-4 w-4" />
+          Profile
+        </Button>
       </div>
     </div>
   );

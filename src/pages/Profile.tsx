@@ -10,6 +10,7 @@ import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import { PersonalDetailsForm } from "@/components/profile/PersonalDetailsForm";
 import { PaymentDetailsForm } from "@/components/profile/PaymentDetailsForm";
 import { AddressesForm } from "@/components/profile/AddressesForm";
+import { SettingsForm } from "@/components/profile/SettingsForm";
 import type { PaymentDetails, ProfileFormData, Address } from "@/types/profile";
 
 const Profile = () => {
@@ -280,9 +281,9 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)]" />
-      <Card className="w-full max-w-2xl relative bg-white/80 backdrop-blur-sm border-white/20 shadow-xl m-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] dark:bg-[radial-gradient(#ffffff10_1px,transparent_1px)]" />
+      <Card className="w-full max-w-2xl relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-white/20 shadow-xl m-4">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <Button
@@ -293,7 +294,7 @@ const Profile = () => {
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mx-auto">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mx-auto dark:from-purple-400 dark:to-blue-400">
               Edit Profile
             </CardTitle>
           </div>
@@ -337,8 +338,13 @@ const Profile = () => {
               />
             </div>
 
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Settings</h3>
+              <SettingsForm />
+            </div>
+
             <Button 
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all duration-200 shadow-lg hover:shadow-xl dark:from-purple-500 dark:to-blue-500"
               type="submit" 
               disabled={loading}
             >
