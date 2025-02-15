@@ -61,6 +61,17 @@ const Profile = () => {
     if (profileResult.data) {
       const paymentDetails = profileResult.data.payment_details as unknown as PaymentDetails;
       
+      const mappedAddresses: Address[] = addressesResult.data.map(addr => ({
+        id: addr.id,
+        addressType: addr.address_type as 'home' | 'work' | 'preferred',
+        streetAddress: addr.street_address,
+        city: addr.city,
+        state: addr.state,
+        postalCode: addr.postal_code,
+        country: addr.country,
+        isDefault: addr.is_default,
+      }));
+      
       setFormData({
         username: profileResult.data.username || "",
         firstName: profileResult.data.first_name || "",
@@ -73,7 +84,7 @@ const Profile = () => {
           cardCVV: "",
         },
         avatarUrl: profileResult.data.avatar_url || "",
-        addresses: addressesResult.data || [],
+        addresses: mappedAddresses,
       });
     }
   };
