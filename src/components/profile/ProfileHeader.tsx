@@ -3,6 +3,8 @@ import { User2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import { ProfileAvatar } from "./ProfileAvatar";
+import { toast } from "sonner";
 
 interface ProfileHeaderProps {
   username: string;
@@ -11,6 +13,9 @@ interface ProfileHeaderProps {
 export const ProfileHeader = ({ username }: ProfileHeaderProps) => {
   const { user } = useAuth();
   const [displayName, setDisplayName] = useState(username);
+  const [firstName, setFirstName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
 
   useEffect(() => {
     if (user) {
@@ -22,7 +27,7 @@ export const ProfileHeader = ({ username }: ProfileHeaderProps) => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('first_name, last_name, username')
+        .select('first_name, last_name, username, avatar_url')
         .eq('id', user?.id)
         .single();
 
@@ -31,10 +36,15 @@ export const ProfileHeader = ({ username }: ProfileHeaderProps) => {
       if (profile) {
         if (profile.first_name && profile.last_name) {
           setDisplayName(`${profile.first_name} ${profile.last_name}`);
+          setFirstName(profile.first_name);
         } else if (profile.username) {
           setDisplayName(profile.username);
         } else {
           setDisplayName(username);
+        }
+        
+        if (profile.avatar_url) {
+          setAvatarUrl(profile.avatar_url);
         }
       }
     } catch (error) {
@@ -43,14 +53,57 @@ export const ProfileHeader = ({ username }: ProfileHeaderProps) => {
     }
   };
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      // Create a preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setAvatarPreview(previewUrl);
+
+      // Upload file to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user?.id}-${Math.random()}.${fileExt}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user?.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast.success('Profile picture updated successfully');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Failed to update profile picture');
+    }
+  };
+
   return (
-    <div className="flex items-start justify-between mb-8">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">{displayName}</h1>
-      </div>
-      <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center">
-        <User2 className="w-8 h-8 text-gray-400" />
-      </div>
+    <div className="flex flex-col items-center mb-8">
+      <ProfileAvatar
+        avatarUrl={avatarUrl}
+        previewUrl={avatarPreview}
+        firstName={firstName}
+        onAvatarChange={handleAvatarChange}
+      />
+      <h1 className="text-3xl font-bold mt-4">{displayName}</h1>
     </div>
   );
 };
