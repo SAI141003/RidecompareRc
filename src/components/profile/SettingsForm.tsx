@@ -6,6 +6,8 @@ import { useTheme } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export const SettingsForm = () => {
   const { theme, setTheme } = useTheme();
@@ -24,25 +26,20 @@ export const SettingsForm = () => {
   return (
     <Card className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">Theme</span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="flex items-center gap-2"
-        >
-          {theme === "dark" ? (
-            <>
-              <Sun className="h-4 w-4" />
-              Light Mode
-            </>
-          ) : (
-            <>
-              <Moon className="h-4 w-4" />
-              Dark Mode
-            </>
-          )}
-        </Button>
+        <div className="space-y-0.5">
+          <Label className="text-base">Appearance</Label>
+          <p className="text-sm text-muted-foreground">
+            Choose between light and dark mode
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Sun className="h-4 w-4" />
+          <Switch
+            checked={theme === "dark"}
+            onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+          />
+          <Moon className="h-4 w-4" />
+        </div>
       </div>
 
       <div className="pt-4 border-t">
