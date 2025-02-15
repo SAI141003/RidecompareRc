@@ -4,17 +4,17 @@ import { Plane, UtensilsCrossed, Car, ShoppingCart } from "lucide-react";
 const features = [
   {
     title: "Google Flights",
-    description: "Find and compare flight prices across multiple airlines in real-time.",
+    description: "Compare flight prices and find the best deals across multiple airlines.",
     icon: <Plane className="h-6 w-6 text-primary" />,
   },
   {
-    title: "Uber Eats & DoorDash",
-    description: "Compare food delivery prices and delivery times from multiple services.",
+    title: "DoorDash",
+    description: "Compare food delivery prices and delivery times from multiple restaurants.",
     icon: <UtensilsCrossed className="h-6 w-6 text-primary" />,
   },
   {
     title: "Skip",
-    description: "Access local delivery options with real-time tracking and competitive pricing.",
+    description: "Find the best local delivery options with real-time tracking.",
     icon: <Car className="h-6 w-6 text-primary" />,
   },
   {
