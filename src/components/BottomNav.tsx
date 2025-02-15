@@ -24,7 +24,7 @@ export const BottomNav = () => {
           <Receipt className="w-6 h-6" />
           <span>Activity</span>
         </Link>
-        <Link to="/account" className={`nav-item ${isActive('/account') ? 'active' : ''}`}>
+        <Link to="/profile" className={`nav-item ${isActive('/profile') ? 'active' : ''}`}>
           <User className="w-6 h-6" />
           <span>Account</span>
         </Link>
