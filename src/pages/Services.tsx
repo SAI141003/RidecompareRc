@@ -3,6 +3,7 @@ import { Header } from "@/components/Header";
 import { 
   Search, Navigation, MapPin
 } from "lucide-react";
+import { BottomNav } from "@/components/BottomNav";
 
 const Services = () => {
   const transportServices = [
@@ -14,7 +15,7 @@ const Services = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-6 pb-20">
         <h1 className="text-3xl font-bold mb-6">Services</h1>
         
         <section className="mb-8">
@@ -31,6 +32,7 @@ const Services = () => {
           </div>
         </section>
       </main>
+      <BottomNav />
     </div>
   );
 };
