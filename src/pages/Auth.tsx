@@ -33,7 +33,14 @@ const Auth = () => {
           email,
           password,
         });
-        if (error) throw error;
+        if (error) {
+          if (error.message === "User already registered") {
+            toast.error("This email is already registered. Please sign in instead.");
+          } else {
+            toast.error(error.message);
+          }
+          return;
+        }
         toast.success("Check your email to confirm your account!");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
