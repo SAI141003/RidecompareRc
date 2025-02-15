@@ -21,7 +21,7 @@ const Index = () => {
           <p className="text-sm text-gray-600 text-center max-w-sm">
             Your journey begins here. Find and book rides to your destination with ease.
           </p>
-          <Link to="/features">
+          <Link to="/coming-soon">
             <Button 
               variant="outline" 
               className="group relative overflow-hidden border-2 border-purple-500 hover:border-blue-500 transition-colors"
