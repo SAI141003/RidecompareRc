@@ -22,19 +22,14 @@ export const Header = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-          {location.pathname !== '/' && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => navigate('/')}
-              className="h-8 w-8"
-            >
-              <Home className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        
-        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate("/")}
+            className="h-8 w-8"
+          >
+            <Home className="h-4 w-4" />
+          </Button>
           <Button
             variant="outline"
             size="icon"
@@ -44,6 +39,7 @@ export const Header = () => {
             <Menu className="h-4 w-4" />
           </Button>
         </div>
+        <div /> {/* Empty div to maintain flex justify-between */}
       </div>
     </div>
   );
