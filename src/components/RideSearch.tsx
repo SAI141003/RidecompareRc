@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
+import type { Database } from "@/integrations/supabase/types";
+
+type Ride = Database['public']['Tables']['rides']['Insert'];
 
 interface RideOption {
   id: string;
@@ -103,7 +106,6 @@ export const RideSearch = () => {
       const { error } = await supabase
         .from('rides')
         .insert({
-          id: crypto.randomUUID(),
           user_id: user.id,
           provider: ride.provider,
           ride_type: ride.type,
@@ -111,7 +113,7 @@ export const RideSearch = () => {
           dropoff_location: dropoff,
           price: ride.price,
           status: 'pending'
-        } as any); // Using 'as any' temporarily until types are properly generated
+        } satisfies Ride);
 
       if (error) throw error;
 
