@@ -36,6 +36,53 @@ export type Database = {
         }
         Relationships: []
       }
+      rides: {
+        Row: {
+          created_at: string
+          dropoff_location: string
+          id: string
+          pickup_location: string
+          price: number
+          provider: string
+          ride_type: string
+          status: Database["public"]["Enums"]["ride_status"] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dropoff_location: string
+          id?: string
+          pickup_location: string
+          price: number
+          provider: string
+          ride_type: string
+          status?: Database["public"]["Enums"]["ride_status"] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dropoff_location?: string
+          id?: string
+          pickup_location?: string
+          price?: number
+          provider?: string
+          ride_type?: string
+          status?: Database["public"]["Enums"]["ride_status"] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rides_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

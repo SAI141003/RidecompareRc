@@ -9,7 +9,6 @@ import {
   Car, 
   CarTaxiFront, 
   Loader2, 
-  LucideCar, 
   MapPin, 
   TrendingUp 
 } from "lucide-react";
@@ -101,14 +100,18 @@ export const RideSearch = () => {
     }
 
     try {
-      const { error } = await supabase.from("rides").insert({
-        user_id: user.id,
-        provider: ride.provider,
-        ride_type: ride.type,
-        pickup_location: pickup,
-        dropoff_location: dropoff,
-        price: ride.price,
-      });
+      const { error } = await supabase
+        .from('rides')
+        .insert({
+          id: crypto.randomUUID(),
+          user_id: user.id,
+          provider: ride.provider,
+          ride_type: ride.type,
+          pickup_location: pickup,
+          dropoff_location: dropoff,
+          price: ride.price,
+          status: 'pending'
+        } as any); // Using 'as any' temporarily until types are properly generated
 
       if (error) throw error;
 
