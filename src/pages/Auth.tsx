@@ -2,13 +2,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
-import { Loader2, Upload } from "lucide-react";
+import WelcomeAnimation from "@/components/auth/WelcomeAnimation";
+import { SignInForm } from "@/components/auth/SignInForm";
+import { SignUpForm } from "@/components/auth/SignUpForm";
 
 const Auth = () => {
   const [showWelcome, setShowWelcome] = useState(true);
@@ -26,41 +25,19 @@ const Auth = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowWelcome(false);
-    }, 2000); // Show welcome animation for 2 seconds
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // Redirect if already logged in
   if (user) {
     navigate("/");
     return null;
   }
 
   if (showWelcome) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50">
-        <div className="text-center animate-fade-up">
-          <div className="w-32 h-32 mx-auto bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl shadow-2xl flex items-center justify-center mb-6 animate-scale-in">
-            <span className="text-5xl font-bold text-white">RC</span>
-          </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent animate-fade-in">
-            RideCompare
-          </h1>
-        </div>
-      </div>
-    );
+    return <WelcomeAnimation />;
   }
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setAvatar(file);
-      // Create a preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setAvatarPreview(previewUrl);
-    }
-  };
 
   const uploadAvatar = async (userId: string) => {
     if (!avatar) return null;
@@ -89,7 +66,6 @@ const Auth = () => {
     
     try {
       if (isSignUp) {
-        // Check if username is available
         const { data: existingUser } = await supabase
           .from("profiles")
           .select("username")
@@ -138,7 +114,6 @@ const Auth = () => {
           }
         }
 
-        // Update profile with username, full name, and avatar
         const { error: updateError } = await supabase
           .from("profiles")
           .update({
@@ -184,89 +159,33 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
-            {isSignUp && (
-              <>
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="relative group">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full opacity-75 group-hover:opacity-100 transition duration-200 blur" />
-                    <Avatar className="h-24 w-24 cursor-pointer relative">
-                      <AvatarImage src={avatarPreview} />
-                      <AvatarFallback className="text-2xl bg-gradient-to-r from-purple-500 to-blue-500 text-white">
-                        {fullName ? fullName.charAt(0).toUpperCase() : "?"}
-                      </AvatarFallback>
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-                        <Upload className="h-6 w-6 text-white" />
-                      </div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarChange}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        aria-label="Upload avatar"
-                      />
-                    </Avatar>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Click to upload avatar
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    type="text"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required={isSignUp}
-                    className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    type="text"
-                    placeholder="Full Name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required={isSignUp}
-                    className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-                  />
-                </div>
-              </>
-            )}
-            <div className="space-y-2">
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-              />
-            </div>
-            <div className="space-y-2">
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-              />
-            </div>
-            <Button 
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all duration-200 shadow-lg hover:shadow-xl" 
-              type="submit" 
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : isSignUp ? (
-                "Sign Up"
-              ) : (
-                "Sign In"
-              )}
-            </Button>
-          </form>
+          {isSignUp ? (
+            <SignUpForm
+              onSubmit={handleAuth}
+              loading={loading}
+              username={username}
+              setUsername={setUsername}
+              fullName={fullName}
+              setFullName={setFullName}
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              avatar={avatar}
+              setAvatar={setAvatar}
+              avatarPreview={avatarPreview}
+              setAvatarPreview={setAvatarPreview}
+            />
+          ) : (
+            <SignInForm
+              onSubmit={handleAuth}
+              loading={loading}
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+            />
+          )}
           <div className="mt-4 text-center text-sm">
             <button
               type="button"
