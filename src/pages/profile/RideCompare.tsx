@@ -33,7 +33,7 @@ const RideCompare = () => {
           <div className="text-center">
             <h2 className="text-xl font-semibold">Premium Membership</h2>
             <p className="text-gray-400 mt-2">Get the most out of RideCompare</p>
-            <div className="text-3xl font-bold mt-4">$9.99/month</div>
+            <div className="text-3xl font-bold mt-4">$2.00/month</div>
           </div>
 
           <ul className="space-y-4">
