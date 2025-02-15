@@ -1,5 +1,5 @@
 
-import { UserCircle, ArrowLeft, Menu, Clock } from "lucide-react";
+import { ArrowLeft, Menu, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 
