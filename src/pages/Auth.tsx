@@ -5,15 +5,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -24,6 +27,37 @@ const Auth = () => {
     navigate("/");
     return null;
   }
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatar(file);
+      // Create a preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setAvatarPreview(previewUrl);
+    }
+  };
+
+  const uploadAvatar = async (userId: string) => {
+    if (!avatar) return null;
+
+    const fileExt = avatar.name.split('.').pop();
+    const filePath = `${userId}/${crypto.randomUUID()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, avatar);
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +78,7 @@ const Auth = () => {
           return;
         }
 
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError, data } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -64,14 +98,31 @@ const Auth = () => {
           return;
         }
 
-        // Update profile with username and full name
+        const userId = data.user?.id;
+        if (!userId) {
+          toast.error("Failed to create user");
+          return;
+        }
+
+        let avatarUrl = null;
+        if (avatar) {
+          try {
+            avatarUrl = await uploadAvatar(userId);
+          } catch (error: any) {
+            toast.error("Failed to upload avatar");
+            console.error("Avatar upload error:", error);
+          }
+        }
+
+        // Update profile with username, full name, and avatar
         const { error: updateError } = await supabase
           .from("profiles")
           .update({
             username,
             full_name: fullName,
+            avatar_url: avatarUrl,
           })
-          .eq("id", (await supabase.auth.getUser()).data.user?.id);
+          .eq("id", userId);
 
         if (updateError) {
           toast.error("Failed to update profile");
@@ -111,6 +162,27 @@ const Auth = () => {
           <form onSubmit={handleAuth} className="space-y-4">
             {isSignUp && (
               <>
+                <div className="flex flex-col items-center space-y-4">
+                  <Avatar className="h-24 w-24 cursor-pointer relative group">
+                    <AvatarImage src={avatarPreview} />
+                    <AvatarFallback className="text-2xl">
+                      {fullName ? fullName.charAt(0).toUpperCase() : "?"}
+                    </AvatarFallback>
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                      <Upload className="h-6 w-6 text-white" />
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      aria-label="Upload avatar"
+                    />
+                  </Avatar>
+                  <p className="text-sm text-muted-foreground">
+                    Click to upload avatar
+                  </p>
+                </div>
                 <div className="space-y-2">
                   <Input
                     type="text"
