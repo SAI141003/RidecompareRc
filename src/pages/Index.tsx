@@ -31,9 +31,6 @@ const Index = () => {
               <ArrowRight className="ml-2 h-4 w-4 text-purple-500 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
             </Button>
           </Link>
-          <div className="text-sm text-gray-500 text-center max-w-md">
-            Coming soon: Integration with Google Flights, Uber Eats, DoorDash, Skip, and Instacart
-          </div>
         </div>
 
         <RideSearch />
