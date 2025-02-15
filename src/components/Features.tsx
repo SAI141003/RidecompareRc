@@ -1,21 +1,26 @@
 
-import { MapPin, Navigation, Search } from "lucide-react";
+import { Plane, UtensilsCrossed, Car, ShoppingCart, Truck } from "lucide-react";
 
 const features = [
   {
-    title: "Compare Rides",
-    description: "Compare prices across multiple ride-sharing services in real-time.",
-    icon: <Search className="h-6 w-6 text-primary" />,
+    title: "Google Flights",
+    description: "Find and compare flight prices across multiple airlines in real-time.",
+    icon: <Plane className="h-6 w-6 text-primary" />,
   },
   {
-    title: "Track Rides",
-    description: "Get accurate arrival times and track your ride in real-time.",
-    icon: <Navigation className="h-6 w-6 text-primary" />,
+    title: "Uber Eats & DoorDash",
+    description: "Compare food delivery prices and delivery times from multiple services.",
+    icon: <UtensilsCrossed className="h-6 w-6 text-primary" />,
   },
   {
-    title: "Smart Routes",
-    description: "AI-powered route suggestions for the best travel experience.",
-    icon: <MapPin className="h-6 w-6 text-primary" />,
+    title: "Skip",
+    description: "Access local delivery options with real-time tracking and competitive pricing.",
+    icon: <Car className="h-6 w-6 text-primary" />,
+  },
+  {
+    title: "Instacart",
+    description: "Compare grocery delivery prices and get the best deals on your shopping.",
+    icon: <ShoppingCart className="h-6 w-6 text-primary" />,
   },
 ];
 
@@ -25,14 +30,14 @@ export const Features = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 animate-fade-up">
           <h2 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4 dark:from-purple-400 dark:to-blue-400">
-            Features
+            Upcoming Integrations
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Discover what RideCompare has to offer
+            Exciting new services coming soon to RideCompare
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {features.map((feature, index) => (
             <div
               key={index}
