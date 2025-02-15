@@ -3,7 +3,6 @@ import {
   Settings, MessageSquare, Car, Tag, CreditCard, User, LogOut
 } from "lucide-react";
 import { MenuItem } from "./MenuItem";
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -40,15 +39,18 @@ export const ProfileMenu = () => {
     {
       icon: <MessageSquare className="w-6 h-6" />,
       title: "Messages",
+      onClick: () => navigate("/profile/messages"),
     },
     {
       icon: <Car className="w-6 h-6" />,
-      title: "RideCompare",
+      title: "RideCompare Premium",
       subtitle: "Premium membership",
+      onClick: () => navigate("/profile/premium"),
     },
     {
       icon: <Tag className="w-6 h-6" />,
       title: "RideCompare promotions",
+      onClick: () => navigate("/profile/promotions"),
     },
     {
       icon: <LogOut className="w-6 h-6" />,
