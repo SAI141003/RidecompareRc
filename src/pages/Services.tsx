@@ -63,19 +63,9 @@ const Services = () => {
 
   const additionalServices = [
     { 
-      icon: <Share2 className="h-6 w-6 text-primary" />, 
-      name: "Split Fare",
-      description: "Share ride costs with friends"
-    },
-    { 
       icon: <Heart className="h-6 w-6 text-primary" />, 
       name: "Favorite Routes",
       description: "Save your frequent trips"
-    },
-    { 
-      icon: <Bike className="h-6 w-6 text-primary" />, 
-      name: "Multi-mode",
-      description: "Compare bikes, scooters, and cars"
     }
   ];
 
