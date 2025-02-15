@@ -4,12 +4,13 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { BottomNav } from "@/components/BottomNav";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pb-20">
         <div className="flex flex-col items-center justify-center space-y-4 mb-8 animate-fade-up">
           <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-lg flex items-center justify-center">
             <span className="text-2xl font-bold text-white">RC</span>
@@ -35,6 +36,7 @@ const Index = () => {
 
         <RideSearch />
       </main>
+      <BottomNav />
     </div>
   );
 };
