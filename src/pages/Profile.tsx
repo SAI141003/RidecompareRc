@@ -3,37 +3,35 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
-import { Loader2, Upload, CreditCard } from "lucide-react";
-
-// Define the type for payment details
-interface PaymentDetails {
-  cardNumber: string;
-  cardExpiry: string;
-  cardCVV?: string; // Optional since we don't store it
-}
+import { Loader2 } from "lucide-react";
+import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
+import { PersonalDetailsForm } from "@/components/profile/PersonalDetailsForm";
+import { PaymentDetailsForm } from "@/components/profile/PaymentDetailsForm";
+import type { PaymentDetails, ProfileFormData } from "@/types/profile";
 
 const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [username, setUsername] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [middleName, setMiddleName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [mobileNumber, setMobileNumber] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCVV, setCardCVV] = useState("");
+  const [formData, setFormData] = useState<ProfileFormData>({
+    username: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    mobileNumber: "",
+    paymentDetails: {
+      cardNumber: "",
+      cardExpiry: "",
+      cardCVV: "",
+    },
+    avatarUrl: "",
+  });
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
-  const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string>("");
 
-  // Fetch profile data
   const fetchProfile = async () => {
     if (!user) return;
     
@@ -49,24 +47,22 @@ const Profile = () => {
     }
 
     if (profile) {
-      setUsername(profile.username || "");
-      setFirstName(profile.first_name || "");
-      setMiddleName(profile.middle_name || "");
-      setLastName(profile.last_name || "");
-      setMobileNumber(profile.mobile_number || "");
-      
-      // Safely type check and access payment_details
-      const paymentDetails = profile.payment_details as PaymentDetails | null;
-      if (paymentDetails && typeof paymentDetails === 'object') {
-        setCardNumber(paymentDetails.cardNumber || "");
-        setCardExpiry(paymentDetails.cardExpiry || "");
-      }
-      
-      setCurrentAvatarUrl(profile.avatar_url || "");
+      setFormData({
+        username: profile.username || "",
+        firstName: profile.first_name || "",
+        middleName: profile.middle_name || "",
+        lastName: profile.last_name || "",
+        mobileNumber: profile.mobile_number || "",
+        paymentDetails: (profile.payment_details as PaymentDetails) || {
+          cardNumber: "",
+          cardExpiry: "",
+          cardCVV: "",
+        },
+        avatarUrl: profile.avatar_url || "",
+      });
     }
   };
 
-  // Fetch profile on mount
   useEffect(() => {
     if (user) {
       fetchProfile();
@@ -85,7 +81,7 @@ const Profile = () => {
   };
 
   const uploadAvatar = async () => {
-    if (!avatar) return currentAvatarUrl;
+    if (!avatar) return formData.avatarUrl;
 
     const fileExt = avatar.name.split('.').pop();
     const filePath = `${user!.id}/${crypto.randomUUID()}.${fileExt}`;
@@ -112,12 +108,11 @@ const Profile = () => {
     setLoading(true);
 
     try {
-      // Check if username is available (if changed)
-      if (username) {
+      if (formData.username) {
         const { data: existingUsers } = await supabase
           .from("profiles")
           .select("username")
-          .eq("username", username)
+          .eq("username", formData.username)
           .neq("id", user.id);
 
         if (existingUsers && existingUsers.length > 0) {
@@ -127,7 +122,7 @@ const Profile = () => {
         }
       }
 
-      let avatarUrl = currentAvatarUrl;
+      let avatarUrl = formData.avatarUrl;
       if (avatar) {
         try {
           avatarUrl = await uploadAvatar();
@@ -138,21 +133,18 @@ const Profile = () => {
         }
       }
 
-      const paymentDetails: PaymentDetails = {
-        cardNumber,
-        cardExpiry
-        // We don't store CVV for security reasons
-      };
-
       const { error: updateError } = await supabase
         .from("profiles")
         .update({
-          username,
-          first_name: firstName,
-          middle_name: middleName,
-          last_name: lastName,
-          mobile_number: mobileNumber,
-          payment_details: paymentDetails,
+          username: formData.username,
+          first_name: formData.firstName,
+          middle_name: formData.middleName,
+          last_name: formData.lastName,
+          mobile_number: formData.mobileNumber,
+          payment_details: {
+            cardNumber: formData.paymentDetails.cardNumber,
+            cardExpiry: formData.paymentDetails.cardExpiry,
+          },
           avatar_url: avatarUrl,
         })
         .eq("id", user.id);
@@ -170,6 +162,23 @@ const Profile = () => {
     }
   };
 
+  const handleFormChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handlePaymentDetailsChange = (field: keyof PaymentDetails, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      paymentDetails: {
+        ...prev.paymentDetails,
+        [field]: value,
+      },
+    }));
+  };
+
   if (!user) {
     return null;
   }
@@ -185,115 +194,26 @@ const Profile = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full opacity-75 group-hover:opacity-100 transition duration-200 blur" />
-                <Avatar className="h-24 w-24 cursor-pointer relative">
-                  <AvatarImage src={avatarPreview || currentAvatarUrl} />
-                  <AvatarFallback className="text-2xl bg-gradient-to-r from-purple-500 to-blue-500 text-white">
-                    {firstName ? firstName.charAt(0).toUpperCase() : "?"}
-                  </AvatarFallback>
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-                    <Upload className="h-6 w-6 text-white" />
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    aria-label="Upload avatar"
-                  />
-                </Avatar>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Click to change avatar
-              </p>
-            </div>
+            <ProfileAvatar
+              avatarUrl={formData.avatarUrl}
+              previewUrl={avatarPreview}
+              firstName={formData.firstName}
+              onAvatarChange={handleAvatarChange}
+            />
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  placeholder="First Name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                  className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-                />
-              </div>
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  placeholder="Last Name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                  className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-                />
-              </div>
-            </div>
+            <PersonalDetailsForm
+              username={formData.username}
+              firstName={formData.firstName}
+              middleName={formData.middleName}
+              lastName={formData.lastName}
+              mobileNumber={formData.mobileNumber}
+              onChange={handleFormChange}
+            />
 
-            <div className="space-y-2">
-              <Input
-                type="text"
-                placeholder="Middle Name (Optional)"
-                value={middleName}
-                onChange={(e) => setMiddleName(e.target.value)}
-                className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Input
-                type="tel"
-                placeholder="Mobile Number"
-                value={mobileNumber}
-                onChange={(e) => setMobileNumber(e.target.value)}
-                required
-                className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-              />
-            </div>
-
-            <div className="space-y-4">
-              <div className="relative">
-                <CreditCard className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                <Input
-                  type="text"
-                  placeholder="Card Number"
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                  className="pl-10 bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  type="text"
-                  placeholder="MM/YY"
-                  value={cardExpiry}
-                  onChange={(e) => setCardExpiry(e.target.value)}
-                  className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-                />
-                <Input
-                  type="password"
-                  placeholder="CVV"
-                  value={cardCVV}
-                  onChange={(e) => setCardCVV(e.target.value)}
-                  maxLength={4}
-                  className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
-                />
-              </div>
-            </div>
+            <PaymentDetailsForm
+              paymentDetails={formData.paymentDetails}
+              onChange={handlePaymentDetailsChange}
+            />
 
             <Button 
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all duration-200 shadow-lg hover:shadow-xl"
