@@ -32,7 +32,7 @@ const Profile = () => {
       .from("profiles")
       .select("username, full_name, avatar_url")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       toast.error("Error loading profile");
@@ -88,15 +88,15 @@ const Profile = () => {
     try {
       // Check if username is available (if changed)
       if (username) {
-        const { data: existingUser } = await supabase
+        const { data: existingUsers } = await supabase
           .from("profiles")
           .select("username")
           .eq("username", username)
-          .neq("id", user.id)
-          .single();
+          .neq("id", user.id);
 
-        if (existingUser) {
+        if (existingUsers && existingUsers.length > 0) {
           toast.error("Username is already taken");
+          setLoading(false);
           return;
         }
       }
