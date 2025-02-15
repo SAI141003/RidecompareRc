@@ -10,6 +10,13 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { Loader2, Upload, CreditCard } from "lucide-react";
 
+// Define the type for payment details
+interface PaymentDetails {
+  cardNumber: string;
+  cardExpiry: string;
+  cardCVV?: string; // Optional since we don't store it
+}
+
 const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -47,10 +54,14 @@ const Profile = () => {
       setMiddleName(profile.middle_name || "");
       setLastName(profile.last_name || "");
       setMobileNumber(profile.mobile_number || "");
-      if (profile.payment_details) {
-        setCardNumber(profile.payment_details.cardNumber || "");
-        setCardExpiry(profile.payment_details.cardExpiry || "");
+      
+      // Safely type check and access payment_details
+      const paymentDetails = profile.payment_details as PaymentDetails | null;
+      if (paymentDetails && typeof paymentDetails === 'object') {
+        setCardNumber(paymentDetails.cardNumber || "");
+        setCardExpiry(paymentDetails.cardExpiry || "");
       }
+      
       setCurrentAvatarUrl(profile.avatar_url || "");
     }
   };
@@ -127,10 +138,10 @@ const Profile = () => {
         }
       }
 
-      const paymentDetails = {
+      const paymentDetails: PaymentDetails = {
         cardNumber,
-        cardExpiry,
-        cardCVV: "" // We don't store CVV for security reasons
+        cardExpiry
+        // We don't store CVV for security reasons
       };
 
       const { error: updateError } = await supabase
