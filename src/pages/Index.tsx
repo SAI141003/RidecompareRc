@@ -2,7 +2,7 @@
 import { RideSearch } from "@/components/RideSearch";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -24,10 +24,12 @@ const Index = () => {
           <Link to="/features">
             <Button 
               variant="outline" 
-              className="group"
+              className="group relative overflow-hidden border-2 border-purple-500 hover:border-blue-500 transition-colors"
             >
-              Explore Features
-              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-blue-100 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Sparkles className="mr-2 h-4 w-4 text-purple-500 group-hover:text-blue-500 transition-colors" />
+              Discover Amazing Features
+              <ArrowRight className="ml-2 h-4 w-4 text-purple-500 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
             </Button>
           </Link>
         </div>
