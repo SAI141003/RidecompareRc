@@ -10,10 +10,10 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col items-center justify-center space-y-6 mb-12 animate-fade-up">
           <div className="w-24 h-24 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-xl flex items-center justify-center">
-            <span className="text-4xl font-bold text-white">AV</span>
+            <span className="text-4xl font-bold text-white">RC</span>
           </div>
           <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            Welcome to AppVenture
+            Welcome to RideCompare
           </h1>
           <p className="text-lg text-gray-600 text-center max-w-md">
             Your journey begins here. Find and book rides to your destination with ease.
