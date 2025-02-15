@@ -12,6 +12,8 @@ import { Loader2 } from "lucide-react";
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -29,18 +31,53 @@ const Auth = () => {
     
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        // Check if username is available
+        const { data: existingUser } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("username", username)
+          .single();
+
+        if (existingUser) {
+          toast.error("Username is already taken");
+          setLoading(false);
+          return;
+        }
+
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              username,
+              full_name: fullName,
+            },
+          },
         });
-        if (error) {
-          if (error.message === "User already registered") {
+
+        if (signUpError) {
+          if (signUpError.message === "User already registered") {
             toast.error("This email is already registered. Please sign in instead.");
           } else {
-            toast.error(error.message);
+            toast.error(signUpError.message);
           }
           return;
         }
+
+        // Update profile with username and full name
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({
+            username,
+            full_name: fullName,
+          })
+          .eq("id", (await supabase.auth.getUser()).data.user?.id);
+
+        if (updateError) {
+          toast.error("Failed to update profile");
+          return;
+        }
+
         toast.success("Check your email to confirm your account!");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -66,12 +103,34 @@ const Auth = () => {
           </CardTitle>
           <CardDescription>
             {isSignUp
-              ? "Enter your email and password to create your account"
+              ? "Enter your details to create your account"
               : "Enter your email and password to login"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
+            {isSignUp && (
+              <>
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required={isSignUp}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    placeholder="Full Name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required={isSignUp}
+                  />
+                </div>
+              </>
+            )}
             <div className="space-y-2">
               <Input
                 type="email"
