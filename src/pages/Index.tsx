@@ -1,7 +1,9 @@
 
 import { RideSearch } from "@/components/RideSearch";
 import { Header } from "@/components/Header";
-import { Plane, Utensils, ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -19,42 +21,15 @@ const Index = () => {
           <p className="text-lg text-gray-600 text-center max-w-md">
             Your journey begins here. Find and book rides to your destination with ease.
           </p>
-        </div>
-
-        {/* Coming Soon Section */}
-        <div className="mb-12 p-6 glass rounded-2xl animate-fade-up">
-          <h2 className="text-2xl font-semibold text-center mb-6 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            New Features Coming Soon!
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-center space-x-4 p-4 glass rounded-xl">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Plane className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Flight Comparison</h3>
-                <p className="text-sm text-gray-600">Google Flights integration</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4 p-4 glass rounded-xl">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Utensils className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Food Delivery</h3>
-                <p className="text-sm text-gray-600">Uber Eats, DoorDash, Skip</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4 p-4 glass rounded-xl">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <ShoppingCart className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Grocery Delivery</h3>
-                <p className="text-sm text-gray-600">Instacart integration</p>
-              </div>
-            </div>
-          </div>
+          <Link to="/features">
+            <Button 
+              variant="outline" 
+              className="group"
+            >
+              Explore Features
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
         </div>
 
         <RideSearch />

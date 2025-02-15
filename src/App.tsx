@@ -5,6 +5,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import Profile from "@/pages/Profile";
+import Features from "@/pages/Features";
 import NotFound from "@/pages/NotFound";
 import "./App.css";
 
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/features" element={<Features />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
