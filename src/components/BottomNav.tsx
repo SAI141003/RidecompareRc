@@ -10,7 +10,7 @@ export const BottomNav = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border h-16">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 h-16">
       <div className="grid grid-cols-4 h-full max-w-md mx-auto">
         <Link to="/" className={`nav-item ${isActive('/') ? 'active' : ''}`}>
           <Home className="w-6 h-6" />

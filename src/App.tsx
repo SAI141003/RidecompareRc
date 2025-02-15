@@ -16,7 +16,7 @@ import "./App.css";
 
 function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <Router>
         <AuthProvider>
           <div className="pb-16"> {/* Add padding for bottom nav */}
