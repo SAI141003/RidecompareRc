@@ -16,7 +16,7 @@ export const ProfileMenu = () => {
     },
     {
       icon: <Car className="w-6 h-6" />,
-      title: "RideCompare One",
+      title: "RideCompare",
       subtitle: "Premium membership",
     },
     {
