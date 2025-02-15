@@ -25,7 +25,6 @@ const Profile = () => {
       <div className="p-6">
         <ProfileHeader 
           username={user.email?.split('@')[0]?.toUpperCase() || 'USER'} 
-          rating={4.90}
         />
         <ProfileMenu />
       </div>
