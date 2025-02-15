@@ -10,7 +10,16 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        <div className="flex flex-col items-center justify-center space-y-6 mb-12 animate-fade-up">
+        <div className="flex flex-col items-center justify-center space-y-4 mb-8 animate-fade-up">
+          <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-lg flex items-center justify-center">
+            <span className="text-2xl font-bold text-white">RC</span>
+          </div>
+          <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            Welcome to RideCompare
+          </h1>
+          <p className="text-sm text-gray-600 text-center max-w-sm">
+            Your journey begins here. Find and book rides to your destination with ease.
+          </p>
           <Link to="/features">
             <Button 
               variant="outline" 
