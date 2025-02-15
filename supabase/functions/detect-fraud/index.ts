@@ -1,5 +1,5 @@
 
-import { serve } from "https://deno.fresh.run/x/server@0.201.1";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { supabaseClient } from "../_shared/supabase-client.ts";
 
 interface FraudDetectionRequest {
@@ -8,7 +8,18 @@ interface FraudDetectionRequest {
   details: Record<string, unknown>;
 }
 
+// Add CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
     const { user_id, action_type, details } = await req.json() as FraudDetectionRequest;
 
@@ -33,18 +44,18 @@ serve(async (req) => {
           status: 'suspicious',
           message: 'Suspicious activity detected',
         }),
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
       JSON.stringify({ status: 'ok' }),
-      { headers: { "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
