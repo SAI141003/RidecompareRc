@@ -7,6 +7,24 @@ import {
 import { BottomNav } from "@/components/BottomNav";
 
 const Services = () => {
+  const rideServices = [
+    { 
+      icon: <Car className="h-6 w-6 text-primary" />, 
+      name: "Compare Rides",
+      description: "Find the best prices across Uber, Lyft and other services"
+    },
+    { 
+      icon: <Navigation className="h-6 w-6 text-primary" />, 
+      name: "Track Rides",
+      description: "Real-time tracking of your current ride"
+    },
+    { 
+      icon: <Search className="h-6 w-6 text-primary" />, 
+      name: "Search Services",
+      description: "Search and filter by service type, price, or ETA"
+    }
+  ];
+
   const compareServices = [
     { 
       icon: <Car className="h-6 w-6 text-primary" />, 
@@ -66,6 +84,21 @@ const Services = () => {
       <Header />
       <main className="container mx-auto px-4 py-6 pb-20">
         <h1 className="text-3xl font-bold mb-6">Our Services</h1>
+
+        <section className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">Main Features</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {rideServices.map((service, index) => (
+              <div key={index} className="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                <div className="h-12 w-12 rounded-xl bg-primary/5 flex items-center justify-center mb-4">
+                  {service.icon}
+                </div>
+                <h3 className="font-semibold mb-2">{service.name}</h3>
+                <p className="text-sm text-gray-600">{service.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
         
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Compare & Save</h2>
