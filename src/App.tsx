@@ -1,27 +1,34 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Index from "@/pages/Index";
-import Profile from "@/pages/Profile";
-import Features from "@/pages/Features";
-import Activity from "@/pages/Activity";
-import { Toaster } from "@/components/ui/toaster";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-const queryClient = new QueryClient();
+import { AuthProvider } from "./components/AuthProvider";
+import { Toaster } from "./components/ui/toaster";
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
+import Activity from "./pages/Activity";
+import Services from "./pages/Services";
+import NotFound from "./pages/NotFound";
+import ComingSoon from "./pages/ComingSoon";
+import SearchResults from "./pages/SearchResults";
+import "./App.css";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
+    <Router>
+      <AuthProvider>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/features" element={<Features />} />
           <Route path="/activity" element={<Activity />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/search-results" element={<SearchResults />} />
+          <Route path="/coming-soon" element={<ComingSoon />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
-      </Router>
-    </QueryClientProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 
