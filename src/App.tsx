@@ -8,6 +8,7 @@ import Auth from "@/pages/Auth";
 import Profile from "@/pages/Profile";
 import Features from "@/pages/Features";
 import SearchResults from "@/pages/SearchResults";
+import ComingSoon from "@/pages/ComingSoon";
 import NotFound from "@/pages/NotFound";
 import "./App.css";
 
@@ -21,6 +22,7 @@ function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/features" element={<Features />} />
+            <Route path="/coming-soon" element={<ComingSoon />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
