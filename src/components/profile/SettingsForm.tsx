@@ -47,7 +47,7 @@ export const SettingsForm = () => {
           <Sun className="h-4 w-4" />
           <Switch
             checked={theme === "dark"}
-            onCheckedChange={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
           />
           <Moon className="h-4 w-4" />
         </div>

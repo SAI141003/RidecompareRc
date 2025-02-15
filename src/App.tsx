@@ -21,7 +21,7 @@ import "./App.css";
 
 function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
       <Router>
         <AuthProvider>
           <Routes>
