@@ -1,6 +1,7 @@
 
 import { MapPin, Navigation, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 interface SearchFormProps {
@@ -18,8 +19,19 @@ export const SearchForm = ({
   setDropoff,
   onSearch,
 }: SearchFormProps) => {
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pickup || !dropoff) {
+      toast.error("Please enter both pickup and dropoff locations");
+      return;
+    }
+    navigate(`/search?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}`);
+  };
+
   return (
-    <div className="glass rounded-2xl p-6 space-y-4 fade-up opacity-0">
+    <form onSubmit={handleSearch} className="glass rounded-2xl p-6 space-y-4 fade-up opacity-0">
       <div className="relative">
         <MapPin className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
         <input
@@ -43,12 +55,12 @@ export const SearchForm = ({
       </div>
 
       <Button 
+        type="submit"
         className="w-full py-6 rounded-xl text-base font-semibold"
-        onClick={onSearch}
       >
         <Search className="mr-2 h-5 w-5" />
         Compare Rides
       </Button>
-    </div>
+    </form>
   );
 };
