@@ -11,6 +11,7 @@ import type { RideOption } from "@/types/ride";
 import { fetchRideOptions } from "@/services/rideService";
 import { SearchForm } from "@/components/ride/SearchForm";
 import { RideCard } from "@/components/ride/RideCard";
+import { getPricePrediction, checkFraudRisk } from "@/services/priceService";
 
 type Ride = Database['public']['Tables']['rides']['Insert'];
 
@@ -22,7 +23,16 @@ export const RideSearch = () => {
 
   const { data: rides, isLoading, refetch } = useQuery({
     queryKey: ["rides", pickup, dropoff],
-    queryFn: () => fetchRideOptions(pickup, dropoff),
+    queryFn: async () => {
+      const prediction = await getPricePrediction(pickup, dropoff);
+      const rideOptions = await fetchRideOptions(pickup, dropoff);
+      
+      // Adjust ride prices based on prediction
+      return rideOptions.map(ride => ({
+        ...ride,
+        price: ride.price * (prediction.confidence_score > 0.8 ? 1 : 0.9) // Apply discount if low confidence
+      }));
+    },
     enabled: false, // Don't fetch automatically
   });
 
@@ -43,6 +53,18 @@ export const RideSearch = () => {
     }
 
     try {
+      // Check for potential fraud
+      const fraudCheck = await checkFraudRisk('book_ride', {
+        amount: ride.price,
+        ride_type: ride.type,
+        provider: ride.provider,
+      });
+
+      if (fraudCheck.status === 'suspicious') {
+        toast.error("Unable to process booking. Please contact support.");
+        return;
+      }
+
       const { error } = await supabase
         .from('rides')
         .insert({
