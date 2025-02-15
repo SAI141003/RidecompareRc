@@ -1,5 +1,5 @@
 
-import { UserCircle, Home, ArrowLeft } from "lucide-react";
+import { UserCircle, Home, ArrowLeft, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -15,36 +15,35 @@ export const Header = () => {
           {showBackButton && (
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2"
+              className="h-8 w-8"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
             </Button>
           )}
           {location.pathname !== '/' && (
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={() => navigate('/')}
-              className="flex items-center gap-2"
+              className="h-8 w-8"
             >
               <Home className="h-4 w-4" />
-              Home
             </Button>
           )}
         </div>
         
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate("/profile")}
-          className="flex items-center gap-2"
-        >
-          <UserCircle className="h-4 w-4" />
-          Profile
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate("/profile")}
+            className="h-8 w-8"
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
