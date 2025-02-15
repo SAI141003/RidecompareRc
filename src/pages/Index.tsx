@@ -1,12 +1,10 @@
 
-import { MapPin, Navigation, Search, LogOut, UserCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import Map from "@/components/Map";
-import RideOptions from "@/components/RideOptions";
+import { Header } from "@/components/Header";
+import { SearchForm } from "@/components/SearchForm";
+import { SearchResults } from "@/components/SearchResults";
+import { Features } from "@/components/Features";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 
 const mockRideOptions = [
   {
@@ -37,16 +35,6 @@ const Index = () => {
   const [dropoff, setDropoff] = useState("");
   const [selectedRide, setSelectedRide] = useState<string>();
   const [showResults, setShowResults] = useState(false);
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate("/auth");
-    } catch (error: any) {
-      toast.error("Error logging out");
-    }
-  };
 
   const handleSearch = () => {
     if (!pickup || !dropoff) {
@@ -74,26 +62,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate("/profile")}
-          className="flex items-center gap-2"
-        >
-          <UserCircle className="h-4 w-4" />
-          Profile
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleLogout}
-          className="flex items-center gap-2"
-        >
-          <LogOut className="h-4 w-4" />
-          Logout
-        </Button>
-      </div>
+      <Header />
 
       <section className="relative min-h-screen flex items-center justify-center hero-pattern overflow-hidden pb-12">
         <div className="container mx-auto px-4">
@@ -111,104 +80,28 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="glass rounded-2xl p-6 space-y-4 fade-up opacity-0">
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Enter pickup location"
-                  value={pickup}
-                  onChange={(e) => setPickup(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-input bg-background"
-                />
-              </div>
-              
-              <div className="relative">
-                <Navigation className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Enter destination"
-                  value={dropoff}
-                  onChange={(e) => setDropoff(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-input bg-background"
-                />
-              </div>
-
-              <Button 
-                className="w-full py-6 rounded-xl text-base font-semibold"
-                onClick={handleSearch}
-              >
-                <Search className="mr-2 h-5 w-5" />
-                Compare Rides
-              </Button>
-            </div>
+            <SearchForm
+              pickup={pickup}
+              setPickup={setPickup}
+              dropoff={dropoff}
+              setDropoff={setDropoff}
+              onSearch={handleSearch}
+            />
 
             {showResults && (
-              <div className="mt-8 space-y-6 fade-up opacity-0">
-                <Map />
-                <div className="glass rounded-2xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">Available Rides</h2>
-                  <RideOptions
-                    options={mockRideOptions}
-                    onSelect={(option) => setSelectedRide(option.id)}
-                    selectedId={selectedRide}
-                  />
-                  {selectedRide && (
-                    <Button className="w-full mt-4">Book Ride</Button>
-                  )}
-                </div>
-              </div>
+              <SearchResults
+                selectedRide={selectedRide}
+                setSelectedRide={setSelectedRide}
+                mockRideOptions={mockRideOptions}
+              />
             )}
           </div>
         </div>
       </section>
 
-      <section className="py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16 fade-up opacity-0">
-            <h2 className="text-3xl font-bold">Why Choose RideCompare?</h2>
-            <p className="mt-4 text-muted-foreground">
-              Compare prices and find the best ride for your journey
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="fade-up opacity-0 glass rounded-2xl p-6 transition-transform duration-200 hover:-translate-y-1"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="h-12 w-12 rounded-xl bg-primary/5 flex items-center justify-center mb-4">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <Features />
     </div>
   );
 };
-
-const features = [
-  {
-    title: "Best Prices",
-    description: "Compare prices across multiple ride-sharing services in real-time.",
-    icon: <Search className="h-6 w-6 text-primary" />,
-  },
-  {
-    title: "Real-Time ETAs",
-    description: "Get accurate arrival times and track your ride in real-time.",
-    icon: <Navigation className="h-6 w-6 text-primary" />,
-  },
-  {
-    title: "Smart Routes",
-    description: "AI-powered route suggestions for the best travel experience.",
-    icon: <MapPin className="h-6 w-6 text-primary" />,
-  },
-];
 
 export default Index;
