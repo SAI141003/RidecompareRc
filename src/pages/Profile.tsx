@@ -20,14 +20,10 @@ const Profile = () => {
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string>("");
 
-  // Redirect if not logged in
-  if (!user) {
-    navigate("/auth");
-    return null;
-  }
-
   // Fetch profile data
   const fetchProfile = async () => {
+    if (!user) return;
+    
     const { data: profile, error } = await supabase
       .from("profiles")
       .select("username, full_name, avatar_url")
@@ -48,8 +44,12 @@ const Profile = () => {
 
   // Fetch profile on mount
   useEffect(() => {
-    fetchProfile();
-  }, [user.id]);
+    if (user) {
+      fetchProfile();
+    } else {
+      navigate("/auth");
+    }
+  }, [user, navigate]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,7 +64,7 @@ const Profile = () => {
     if (!avatar) return currentAvatarUrl;
 
     const fileExt = avatar.name.split('.').pop();
-    const filePath = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
+    const filePath = `${user!.id}/${crypto.randomUUID()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
@@ -83,6 +83,8 @@ const Profile = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setLoading(true);
 
     try {
@@ -133,6 +135,10 @@ const Profile = () => {
       setLoading(false);
     }
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50">
