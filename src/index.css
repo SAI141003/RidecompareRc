@@ -5,25 +5,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --background: 0 0% 10%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 13%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 13%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 13%;
+    --secondary: 0 0% 17%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 17%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 0% 17%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 83.9%;
     --radius: 0.75rem;
   }
 }
@@ -36,12 +36,26 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
+}
 
-  .glass {
-    @apply bg-white/80 backdrop-blur-lg border border-white/20;
+@layer components {
+  .service-card {
+    @apply bg-card rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-transform hover:scale-105;
   }
 
-  .container {
-    @apply px-4 mx-auto max-w-7xl sm:px-6 lg:px-8;
+  .service-icon {
+    @apply w-12 h-12 mb-1;
+  }
+
+  .promo-badge {
+    @apply absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full;
+  }
+
+  .nav-item {
+    @apply flex flex-col items-center justify-center text-sm text-muted-foreground;
+  }
+
+  .nav-item.active {
+    @apply text-foreground;
   }
 }
