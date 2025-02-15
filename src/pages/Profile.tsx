@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import { PersonalDetailsForm } from "@/components/profile/PersonalDetailsForm";
 import { PaymentDetailsForm } from "@/components/profile/PaymentDetailsForm";
-import type { PaymentDetails, ProfileFormData } from "@/types/profile";
+import { AddressesForm } from "@/components/profile/AddressesForm";
+import type { PaymentDetails, ProfileFormData, Address } from "@/types/profile";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -28,6 +28,7 @@ const Profile = () => {
       cardCVV: "",
     },
     avatarUrl: "",
+    addresses: [],
   });
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
@@ -35,33 +36,44 @@ const Profile = () => {
   const fetchProfile = async () => {
     if (!user) return;
     
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .select("username, first_name, middle_name, last_name, mobile_number, payment_details, avatar_url")
-      .eq("id", user.id)
-      .maybeSingle();
+    const [profileResult, addressesResult] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("username, first_name, middle_name, last_name, mobile_number, payment_details, avatar_url")
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("user_addresses")
+        .select("*")
+        .eq("user_id", user.id)
+    ]);
 
-    if (error) {
+    if (profileResult.error) {
       toast.error("Error loading profile");
       return;
     }
 
-    if (profile) {
-      // Fix the type conversion for payment_details
-      const paymentDetails = profile.payment_details as unknown as PaymentDetails;
+    if (addressesResult.error) {
+      toast.error("Error loading addresses");
+      return;
+    }
+
+    if (profileResult.data) {
+      const paymentDetails = profileResult.data.payment_details as unknown as PaymentDetails;
       
       setFormData({
-        username: profile.username || "",
-        firstName: profile.first_name || "",
-        middleName: profile.middle_name || "",
-        lastName: profile.last_name || "",
-        mobileNumber: profile.mobile_number || "",
+        username: profileResult.data.username || "",
+        firstName: profileResult.data.first_name || "",
+        middleName: profileResult.data.middle_name || "",
+        lastName: profileResult.data.last_name || "",
+        mobileNumber: profileResult.data.mobile_number || "",
         paymentDetails: paymentDetails || {
           cardNumber: "",
           cardExpiry: "",
           cardCVV: "",
         },
-        avatarUrl: profile.avatar_url || "",
+        avatarUrl: profileResult.data.avatar_url || "",
+        addresses: addressesResult.data || [],
       });
     }
   };
@@ -102,6 +114,76 @@ const Profile = () => {
       .getPublicUrl(filePath);
 
     return publicUrl;
+  };
+
+  const handleAddAddress = async (address: Address) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("user_addresses")
+      .insert({
+        user_id: user.id,
+        address_type: address.addressType,
+        street_address: address.streetAddress,
+        city: address.city,
+        state: address.state,
+        postal_code: address.postalCode,
+        country: address.country,
+        is_default: address.isDefault,
+      });
+
+    if (error) {
+      toast.error("Failed to add address");
+      return;
+    }
+
+    await fetchProfile();
+    toast.success("Address added successfully!");
+  };
+
+  const handleUpdateAddress = async (index: number, address: Address) => {
+    if (!user || !address.id) return;
+
+    const { error } = await supabase
+      .from("user_addresses")
+      .update({
+        address_type: address.addressType,
+        street_address: address.streetAddress,
+        city: address.city,
+        state: address.state,
+        postal_code: address.postalCode,
+        country: address.country,
+        is_default: address.isDefault,
+      })
+      .eq("id", address.id);
+
+    if (error) {
+      toast.error("Failed to update address");
+      return;
+    }
+
+    const newAddresses = [...formData.addresses];
+    newAddresses[index] = address;
+    setFormData(prev => ({ ...prev, addresses: newAddresses }));
+  };
+
+  const handleDeleteAddress = async (index: number) => {
+    const address = formData.addresses[index];
+    if (!user || !address.id) return;
+
+    const { error } = await supabase
+      .from("user_addresses")
+      .delete()
+      .eq("id", address.id);
+
+    if (error) {
+      toast.error("Failed to delete address");
+      return;
+    }
+
+    const newAddresses = formData.addresses.filter((_, i) => i !== index);
+    setFormData(prev => ({ ...prev, addresses: newAddresses }));
+    toast.success("Address deleted successfully!");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -189,14 +271,24 @@ const Profile = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)]" />
-      <Card className="w-full max-w-md relative bg-white/80 backdrop-blur-sm border-white/20 shadow-xl">
+      <Card className="w-full max-w-2xl relative bg-white/80 backdrop-blur-sm border-white/20 shadow-xl m-4">
         <CardHeader className="pb-4">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            Edit Profile
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+              className="absolute left-4 top-4"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mx-auto">
+              Edit Profile
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <ProfileAvatar
               avatarUrl={formData.avatarUrl}
               previewUrl={avatarPreview}
@@ -204,19 +296,35 @@ const Profile = () => {
               onAvatarChange={handleAvatarChange}
             />
 
-            <PersonalDetailsForm
-              username={formData.username}
-              firstName={formData.firstName}
-              middleName={formData.middleName}
-              lastName={formData.lastName}
-              mobileNumber={formData.mobileNumber}
-              onChange={handleFormChange}
-            />
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Personal Information</h3>
+              <PersonalDetailsForm
+                username={formData.username}
+                firstName={formData.firstName}
+                middleName={formData.middleName}
+                lastName={formData.lastName}
+                mobileNumber={formData.mobileNumber}
+                onChange={handleFormChange}
+              />
+            </div>
 
-            <PaymentDetailsForm
-              paymentDetails={formData.paymentDetails}
-              onChange={handlePaymentDetailsChange}
-            />
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Payment Information</h3>
+              <PaymentDetailsForm
+                paymentDetails={formData.paymentDetails}
+                onChange={handlePaymentDetailsChange}
+              />
+            </div>
+
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Addresses</h3>
+              <AddressesForm
+                addresses={formData.addresses}
+                onAddAddress={handleAddAddress}
+                onUpdateAddress={handleUpdateAddress}
+                onDeleteAddress={handleDeleteAddress}
+              />
+            </div>
 
             <Button 
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all duration-200 shadow-lg hover:shadow-xl"

@@ -5,6 +5,17 @@ export interface PaymentDetails {
   cardCVV?: string;
 }
 
+export interface Address {
+  id?: string;
+  addressType: 'home' | 'work' | 'preferred';
+  streetAddress: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+}
+
 export interface ProfileFormData {
   username: string;
   firstName: string;
@@ -13,4 +24,5 @@ export interface ProfileFormData {
   mobileNumber: string;
   paymentDetails: PaymentDetails;
   avatarUrl: string;
+  addresses: Address[];
 }
