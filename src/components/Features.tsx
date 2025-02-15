@@ -1,5 +1,5 @@
 
-import { Plane, UtensilsCrossed, Car, ShoppingCart, Truck } from "lucide-react";
+import { Plane, UtensilsCrossed, Car, ShoppingCart } from "lucide-react";
 
 const features = [
   {
