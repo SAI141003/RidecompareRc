@@ -8,10 +8,17 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useEffect, useState } from "react";
 
 export const SettingsForm = () => {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -22,6 +29,10 @@ export const SettingsForm = () => {
       toast.error("Error logging out");
     }
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <Card className="p-6 space-y-6">

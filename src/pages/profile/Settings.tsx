@@ -8,14 +8,13 @@ const Settings = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto p-6 max-w-md">
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate('/profile')}
-            className="hover:bg-gray-800"
           >
             <ChevronLeft className="h-6 w-6" />
           </Button>
