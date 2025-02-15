@@ -1,7 +1,7 @@
 
 import { RideSearch } from "@/components/RideSearch";
 import { Header } from "@/components/Header";
-import { Airplane, Utensils, ShoppingCart } from "lucide-react";
+import { Plane, Utensils, ShoppingCart } from "lucide-react";
 
 const Index = () => {
   return (
@@ -29,7 +29,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-center space-x-4 p-4 glass rounded-xl">
               <div className="p-3 bg-purple-100 rounded-lg">
-                <Airplane className="h-6 w-6 text-purple-600" />
+                <Plane className="h-6 w-6 text-purple-600" />
               </div>
               <div>
                 <h3 className="font-semibold">Flight Comparison</h3>
