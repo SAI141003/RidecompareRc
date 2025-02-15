@@ -27,10 +27,13 @@ const Index = () => {
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-blue-100 opacity-0 group-hover:opacity-100 transition-opacity" />
               <Sparkles className="mr-2 h-4 w-4 text-purple-500 group-hover:text-blue-500 transition-colors" />
-              Discover Amazing Features
+              Upcoming Features
               <ArrowRight className="ml-2 h-4 w-4 text-purple-500 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
             </Button>
           </Link>
+          <div className="text-sm text-gray-500 text-center max-w-md">
+            Coming soon: Integration with Google Flights, Uber Eats, DoorDash, Skip, and Instacart
+          </div>
         </div>
 
         <RideSearch />
