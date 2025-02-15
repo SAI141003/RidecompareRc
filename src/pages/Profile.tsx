@@ -47,13 +47,16 @@ const Profile = () => {
     }
 
     if (profile) {
+      // Fix the type conversion for payment_details
+      const paymentDetails = profile.payment_details as unknown as PaymentDetails;
+      
       setFormData({
         username: profile.username || "",
         firstName: profile.first_name || "",
         middleName: profile.middle_name || "",
         lastName: profile.last_name || "",
         mobileNumber: profile.mobile_number || "",
-        paymentDetails: (profile.payment_details as PaymentDetails) || {
+        paymentDetails: paymentDetails || {
           cardNumber: "",
           cardExpiry: "",
           cardCVV: "",
