@@ -1,4 +1,5 @@
-import { MapPin, Navigation, Search, LogOut } from "lucide-react";
+
+import { MapPin, Navigation, Search, LogOut, UserCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Map from "@/components/Map";
@@ -73,7 +74,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/profile")}
+          className="flex items-center gap-2"
+        >
+          <UserCircle className="h-4 w-4" />
+          Profile
+        </Button>
         <Button
           variant="outline"
           size="sm"
