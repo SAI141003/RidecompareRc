@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Geolocation, PermissionStatus } from '@capacitor/geolocation';
+import { Geolocation } from '@capacitor/geolocation';
 import L from 'leaflet';
 import { toast } from "sonner";
 import 'leaflet/dist/leaflet.css';
@@ -14,6 +14,7 @@ const Map = ({ pickup, dropoff }: MapProps) => {
   const mapRef = useRef<L.Map | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const mapContainer = useRef<HTMLDivElement>(null);
+  const routeLayerRef = useRef<L.Polyline | null>(null);
 
   // Initialize map and handle location
   useEffect(() => {
@@ -21,18 +22,18 @@ const Map = ({ pickup, dropoff }: MapProps) => {
 
     const initializeMap = async () => {
       try {
-        // Check location permission first
+        // Check location permission
         const permissionStatus = await Geolocation.checkPermissions();
         
         if (permissionStatus.location === 'denied') {
           const newPermission = await Geolocation.requestPermissions();
           if (newPermission.location !== 'granted') {
-            toast.error('Location permission is required to show your location');
+            toast.error('Location permission is required');
             return;
           }
         }
 
-        // Create map instance with default view
+        // Create map instance
         mapRef.current = L.map(mapContainer.current).setView([40.7128, -74.0060], 13);
 
         // Add OpenStreetMap tiles
@@ -40,7 +41,7 @@ const Map = ({ pickup, dropoff }: MapProps) => {
           attribution: '© OpenStreetMap contributors'
         }).addTo(mapRef.current);
 
-        // Get high accuracy location
+        // Get user location
         const position = await Geolocation.getCurrentPosition({
           enableHighAccuracy: true,
           timeout: 10000,
@@ -51,45 +52,20 @@ const Map = ({ pickup, dropoff }: MapProps) => {
         setUserLocation([latitude, longitude]);
         
         if (mapRef.current) {
-          // Center map on user location
           mapRef.current.setView([latitude, longitude], 15);
-          
-          // Add user location marker with custom popup
           L.marker([latitude, longitude])
             .addTo(mapRef.current)
             .bindPopup('You are here')
             .openPopup();
-
-          // Watch for location updates
-          const watchId = await Geolocation.watchPosition(
-            { enableHighAccuracy: true },
-            (position, err) => {
-              if (err) {
-                console.error('Watch position error:', err);
-                return;
-              }
-              if (position) {
-                const { latitude, longitude } = position.coords;
-                setUserLocation([latitude, longitude]);
-              }
-            }
-          );
-
-          // Cleanup watch position
-          return () => {
-            Geolocation.clearWatch({ id: watchId });
-          };
         }
-
       } catch (error: any) {
-        toast.error(error.message || 'Could not get your location');
+        toast.error('Could not get your location');
         console.error('Geolocation error:', error);
       }
     };
 
     initializeMap();
 
-    // Cleanup map
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
@@ -98,13 +74,13 @@ const Map = ({ pickup, dropoff }: MapProps) => {
     };
   }, []);
 
-  // Update markers when pickup/dropoff points change
+  // Update markers and route when pickup/dropoff points change
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Clear existing markers
+    // Clear existing markers and route
     mapRef.current.eachLayer((layer) => {
-      if (layer instanceof L.Marker) {
+      if (layer instanceof L.Marker || layer instanceof L.Polyline) {
         layer.remove();
       }
     });
@@ -130,13 +106,44 @@ const Map = ({ pickup, dropoff }: MapProps) => {
         .bindPopup('Dropoff location');
     }
 
-    // Create an array of valid coordinates to fit bounds
+    // Draw route if both pickup and dropoff are set
+    if (pickup && dropoff) {
+      const fetchRoute = async () => {
+        try {
+          const response = await fetch(
+            `https://router.project-osrm.org/route/v1/driving/${pickup[1]},${pickup[0]};${dropoff[1]},${dropoff[0]}?overview=full&geometries=geojson`
+          );
+          const data = await response.json();
+          
+          if (data.routes && data.routes[0]) {
+            const coordinates = data.routes[0].geometry.coordinates.map(
+              (coord: [number, number]) => [coord[1], coord[0]]
+            );
+            
+            if (routeLayerRef.current) {
+              routeLayerRef.current.remove();
+            }
+            
+            routeLayerRef.current = L.polyline(coordinates, {
+              color: 'blue',
+              weight: 4,
+              opacity: 0.7
+            }).addTo(mapRef.current!);
+          }
+        } catch (error) {
+          console.error('Error fetching route:', error);
+        }
+      };
+
+      fetchRoute();
+    }
+
+    // Fit map bounds to show all points
     const coordinates: L.LatLngExpression[] = [];
     if (userLocation) coordinates.push(userLocation);
     if (pickup) coordinates.push(pickup);
     if (dropoff) coordinates.push(dropoff);
 
-    // Only fit bounds if we have coordinates
     if (coordinates.length > 0) {
       const bounds = L.latLngBounds(coordinates);
       mapRef.current.fitBounds(bounds, { padding: [50, 50] });

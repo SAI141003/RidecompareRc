@@ -8,11 +8,11 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import type { Database } from "@/integrations/supabase/types";
 import type { RideOption } from "@/types/ride";
-import { fetchRideOptions } from "@/services/rideService";
-import { SearchForm } from "@/components/ride/SearchForm";
 import { RideCard } from "@/components/ride/RideCard";
 import { getPricePrediction, checkFraudRisk } from "@/services/priceService";
 import Map from "@/components/Map";
+import { LocationSearch } from "@/components/LocationSearch";
+import { Button } from "@/components/ui/button";
 
 type Ride = Database['public']['Tables']['rides']['Insert'];
 
@@ -20,6 +20,8 @@ export const RideSearch = () => {
   const { user } = useAuth();
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
+  const [pickupCoords, setPickupCoords] = useState<[number, number]>();
+  const [dropoffCoords, setDropoffCoords] = useState<[number, number]>();
   const [isSearching, setIsSearching] = useState(false);
 
   const { data: rides, isLoading, refetch } = useQuery({
@@ -27,14 +29,12 @@ export const RideSearch = () => {
     queryFn: async () => {
       const prediction = await getPricePrediction(pickup, dropoff);
       const rideOptions = await fetchRideOptions(pickup, dropoff);
-      
-      // Adjust ride prices based on prediction
       return rideOptions.map(ride => ({
         ...ride,
-        price: ride.price * (prediction.confidence_score > 0.8 ? 1 : 0.9) // Apply discount if low confidence
+        price: ride.price * (prediction.confidence_score > 0.8 ? 1 : 0.9)
       }));
     },
-    enabled: false, // Don't fetch automatically
+    enabled: false,
   });
 
   const handleSearch = async () => {
@@ -54,7 +54,6 @@ export const RideSearch = () => {
     }
 
     try {
-      // Check for potential fraud
       const fraudCheck = await checkFraudRisk('book_ride', {
         amount: ride.price,
         ride_type: ride.type,
@@ -95,17 +94,33 @@ export const RideSearch = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Show map above the search form */}
-          <Map />
+          <Map pickup={pickupCoords} dropoff={dropoffCoords} />
           
-          <SearchForm
-            pickup={pickup}
-            setPickup={setPickup}
-            dropoff={dropoff}
-            setDropoff={setDropoff}
-            onSearch={handleSearch}
-            isSearching={isSearching}
-          />
+          <div className="space-y-4">
+            <LocationSearch
+              placeholder="Enter pickup location"
+              value={pickup}
+              onChange={setPickup}
+              onLocationSelect={setPickupCoords}
+            />
+            <LocationSearch
+              placeholder="Enter dropoff location"
+              value={dropoff}
+              onChange={setDropoff}
+              onLocationSelect={setDropoffCoords}
+            />
+            <Button 
+              onClick={handleSearch} 
+              className="w-full"
+              disabled={isSearching}
+            >
+              {isSearching ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Search Rides"
+              )}
+            </Button>
+          </div>
 
           {isLoading ? (
             <div className="flex justify-center py-8">
