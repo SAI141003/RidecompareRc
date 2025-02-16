@@ -92,13 +92,15 @@ const Map = ({ pickup, dropoff }: MapProps) => {
         .bindPopup('Dropoff location');
     }
 
-    // Fit bounds to include all markers
-    const bounds = L.latLngBounds([]);
-    if (userLocation) bounds.extend(userLocation);
-    if (pickup) bounds.extend(pickup);
-    if (dropoff) bounds.extend(dropoff);
-    
-    if (!bounds.isEmpty()) {
+    // Create an array of valid coordinates to fit bounds
+    const coordinates: L.LatLngExpression[] = [];
+    if (userLocation) coordinates.push(userLocation);
+    if (pickup) coordinates.push(pickup);
+    if (dropoff) coordinates.push(dropoff);
+
+    // Only fit bounds if we have coordinates
+    if (coordinates.length > 0) {
+      const bounds = L.latLngBounds(coordinates);
       mapRef.current.fitBounds(bounds, { padding: [50, 50] });
     }
   }, [pickup, dropoff, userLocation]);
