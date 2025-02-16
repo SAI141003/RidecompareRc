@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Geolocation } from '@capacitor/geolocation';
+import { Geolocation, PermissionStatus } from '@capacitor/geolocation';
 import L from 'leaflet';
 import { toast } from "sonner";
 import 'leaflet/dist/leaflet.css';
@@ -15,43 +15,81 @@ const Map = ({ pickup, dropoff }: MapProps) => {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const mapContainer = useRef<HTMLDivElement>(null);
 
-  // Initialize map
+  // Initialize map and handle location
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
 
-    // Create map instance
-    mapRef.current = L.map(mapContainer.current).setView([40.7128, -74.0060], 13);
-
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(mapRef.current);
-
-    // Get user's location
-    const getCurrentLocation = async () => {
+    const initializeMap = async () => {
       try {
-        const position = await Geolocation.getCurrentPosition();
+        // Check location permission first
+        const permissionStatus = await Geolocation.checkPermissions();
+        
+        if (permissionStatus.location === 'denied') {
+          const newPermission = await Geolocation.requestPermissions();
+          if (newPermission.location !== 'granted') {
+            toast.error('Location permission is required to show your location');
+            return;
+          }
+        }
+
+        // Create map instance with default view
+        mapRef.current = L.map(mapContainer.current).setView([40.7128, -74.0060], 13);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(mapRef.current);
+
+        // Get high accuracy location
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+
         const { latitude, longitude } = position.coords;
         setUserLocation([latitude, longitude]);
         
-        // Center map on user location
-        mapRef.current?.setView([latitude, longitude], 15);
-        
-        // Add user location marker
-        L.marker([latitude, longitude])
-          .addTo(mapRef.current)
-          .bindPopup('You are here')
-          .openPopup();
+        if (mapRef.current) {
+          // Center map on user location
+          mapRef.current.setView([latitude, longitude], 15);
+          
+          // Add user location marker with custom popup
+          L.marker([latitude, longitude])
+            .addTo(mapRef.current)
+            .bindPopup('You are here')
+            .openPopup();
 
-      } catch (error) {
-        toast.error('Could not get your location');
+          // Watch for location updates
+          const watchId = await Geolocation.watchPosition(
+            { enableHighAccuracy: true },
+            (position, err) => {
+              if (err) {
+                console.error('Watch position error:', err);
+                return;
+              }
+              if (position) {
+                const { latitude, longitude } = position.coords;
+                setUserLocation([latitude, longitude]);
+              }
+            }
+          );
+
+          // Cleanup watch position
+          return () => {
+            Geolocation.clearWatch({ id: watchId });
+          };
+        }
+
+      } catch (error: any) {
+        toast.error(error.message || 'Could not get your location');
         console.error('Geolocation error:', error);
       }
     };
 
-    getCurrentLocation();
+    initializeMap();
 
-    // Cleanup
+    // Cleanup map
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
