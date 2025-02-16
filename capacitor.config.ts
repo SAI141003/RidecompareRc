@@ -11,6 +11,22 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: 'always'
+  },
+  plugins: {
+    Geolocation: {
+      ios: {
+        requireAlwaysAuthorization: false,
+        requireDescriptions: true,
+        locationWhenInUseDescription: "We need your location to find rides near you.",
+        locationAlwaysDescription: "We need your location to find rides near you."
+      },
+      android: {
+        requireLocation: true,
+        requireLocationAlways: false,
+        requireCoarseLocation: true,
+        requireFineLocation: true
+      }
+    }
   }
 };
 

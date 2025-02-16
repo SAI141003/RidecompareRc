@@ -1,7 +1,9 @@
 
-import React, { useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import React, { useEffect, useRef, useState } from 'react';
+import { Geolocation } from '@capacitor/geolocation';
+import L from 'leaflet';
+import { toast } from "sonner";
+import 'leaflet/dist/leaflet.css';
 
 interface MapProps {
   pickup?: [number, number];
@@ -9,27 +11,97 @@ interface MapProps {
 }
 
 const Map = ({ pickup, dropoff }: MapProps) => {
+  const mapRef = useRef<L.Map | null>(null);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
 
+  // Initialize map
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || mapRef.current) return;
 
-    // Initialize map
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-74.5, 40],
-      zoom: 9
-    });
+    // Create map instance
+    mapRef.current = L.map(mapContainer.current).setView([40.7128, -74.0060], 13);
 
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(mapRef.current);
 
+    // Get user's location
+    const getCurrentLocation = async () => {
+      try {
+        const position = await Geolocation.getCurrentPosition();
+        const { latitude, longitude } = position.coords;
+        setUserLocation([latitude, longitude]);
+        
+        // Center map on user location
+        mapRef.current?.setView([latitude, longitude], 15);
+        
+        // Add user location marker
+        L.marker([latitude, longitude])
+          .addTo(mapRef.current)
+          .bindPopup('You are here')
+          .openPopup();
+
+      } catch (error) {
+        toast.error('Could not get your location');
+        console.error('Geolocation error:', error);
+      }
+    };
+
+    getCurrentLocation();
+
+    // Cleanup
     return () => {
-      map.current?.remove();
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
   }, []);
+
+  // Update markers when pickup/dropoff points change
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Clear existing markers
+    mapRef.current.eachLayer((layer) => {
+      if (layer instanceof L.Marker) {
+        layer.remove();
+      }
+    });
+
+    // Add user location marker
+    if (userLocation) {
+      L.marker(userLocation)
+        .addTo(mapRef.current)
+        .bindPopup('You are here');
+    }
+
+    // Add pickup marker
+    if (pickup) {
+      L.marker(pickup)
+        .addTo(mapRef.current)
+        .bindPopup('Pickup location');
+    }
+
+    // Add dropoff marker
+    if (dropoff) {
+      L.marker(dropoff)
+        .addTo(mapRef.current)
+        .bindPopup('Dropoff location');
+    }
+
+    // Fit bounds to include all markers
+    const bounds = L.latLngBounds([]);
+    if (userLocation) bounds.extend(userLocation);
+    if (pickup) bounds.extend(pickup);
+    if (dropoff) bounds.extend(dropoff);
+    
+    if (!bounds.isEmpty()) {
+      mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [pickup, dropoff, userLocation]);
 
   return (
     <div className="h-[400px] w-full rounded-xl overflow-hidden">
