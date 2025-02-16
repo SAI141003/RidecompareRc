@@ -12,6 +12,7 @@ import { fetchRideOptions } from "@/services/rideService";
 import { SearchForm } from "@/components/ride/SearchForm";
 import { RideCard } from "@/components/ride/RideCard";
 import { getPricePrediction, checkFraudRisk } from "@/services/priceService";
+import Map from "@/components/Map";
 
 type Ride = Database['public']['Tables']['rides']['Insert'];
 
@@ -94,6 +95,9 @@ export const RideSearch = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Show map above the search form */}
+          <Map />
+          
           <SearchForm
             pickup={pickup}
             setPickup={setPickup}
