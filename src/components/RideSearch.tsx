@@ -10,6 +10,7 @@ import type { Database } from "@/integrations/supabase/types";
 import type { RideOption } from "@/types/ride";
 import { RideCard } from "@/components/ride/RideCard";
 import { getPricePrediction, checkFraudRisk } from "@/services/priceService";
+import { fetchRideOptions } from "@/services/rideService";
 import Map from "@/components/Map";
 import { LocationSearch } from "@/components/LocationSearch";
 import { Button } from "@/components/ui/button";
