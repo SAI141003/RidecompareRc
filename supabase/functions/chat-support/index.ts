@@ -21,16 +21,16 @@ serve(async (req) => {
       throw new Error('RASA_API_KEY is not configured')
     }
 
-    // Call Rasa API with the correct endpoint and format
-    const response = await fetch('https://api.rasa.com/v1/messages', {
+    // Using Rasa's webhook endpoint for direct message handling
+    const response = await fetch('https://api.rasa.com/v1/webhooks/rest/webhook', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${RASA_API_KEY}`,
       },
       body: JSON.stringify({ 
-        message: message,
-        sender: "web_user"
+        sender: "web_user",
+        message: message
       }),
     })
 
@@ -46,9 +46,11 @@ serve(async (req) => {
 
     let botMessage
     try {
+      // Webhook endpoint returns an array of messages
       const rasaResponse = JSON.parse(responseText)
-      // Handle the response format as per Rasa's documentation
-      botMessage = rasaResponse.text || rasaResponse.message || "I'm sorry, I couldn't process that request."
+      botMessage = Array.isArray(rasaResponse) && rasaResponse.length > 0
+        ? rasaResponse[0].text
+        : "I'm sorry, I couldn't process that request."
     } catch (e) {
       console.error('Error parsing Rasa response:', e)
       botMessage = "I'm sorry, there was an error processing your request."
