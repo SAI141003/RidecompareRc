@@ -1,17 +1,25 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { corsHeaders } from "../_shared/cors.ts"
 
-const RASA_API_KEY = Deno.env.get('RASA_API_KEY')
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const { message } = await req.json()
+    console.log('Received message:', message)
+
+    const RASA_API_KEY = Deno.env.get('RASA_API_KEY')
+    if (!RASA_API_KEY) {
+      throw new Error('RASA_API_KEY is not configured')
+    }
 
     // Call Rasa API
     const response = await fetch('https://api.rasa.com/v1/webhooks/rest/webhook', {
@@ -27,6 +35,7 @@ serve(async (req) => {
     })
 
     if (!response.ok) {
+      console.error('Rasa API error:', response.statusText)
       throw new Error(`Rasa API error: ${response.statusText}`)
     }
 
