@@ -6,74 +6,60 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const RASA_ENDPOINT = 'https://api.rasa.ai/api/v1/messages'
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const { message } = await req.json()
-    console.log('Received message:', message)
+    console.log('Processing incoming message:', message)
 
-    // For testing purposes, return a mock response
-    const mockResponse = {
-      response: `This is a test response to your message: "${message}"`
-    }
-
-    console.log('Sending mock response:', mockResponse)
-
-    return new Response(
-      JSON.stringify(mockResponse),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-      },
-    )
-
-    /* Commenting out Rasa integration for now to test basic functionality
     const RASA_API_KEY = Deno.env.get('RASA_API_KEY')
     if (!RASA_API_KEY) {
+      console.error('RASA_API_KEY not found in environment variables')
       throw new Error('RASA_API_KEY is not configured')
     }
 
-    const response = await fetch('https://api.rasa.com/v1/webhooks/rest/webhook', {
+    console.log('Sending request to Rasa API...')
+    const response = await fetch(RASA_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${RASA_API_KEY}`,
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
-        sender: "web_user",
-        message: message
+      body: JSON.stringify({
+        sender_id: 'web_user_' + Date.now(), // Unique sender ID for each request
+        message: message,
+        metadata: {
+          channel: 'web',
+          platform: 'ridecompare'
+        }
       }),
     })
 
     console.log('Rasa API Response Status:', response.status)
-    const responseText = await response.text()
-    console.log('Rasa API Raw Response:', responseText)
-
+    
     if (!response.ok) {
-      const errorMessage = `Rasa API error: ${response.status} - ${responseText}`
-      console.error(errorMessage)
-      throw new Error(errorMessage)
+      const errorText = await response.text()
+      console.error('Rasa API Error:', errorText)
+      throw new Error(`Rasa API returned ${response.status}: ${errorText}`)
     }
 
-    let botMessage
-    try {
-      const rasaResponse = JSON.parse(responseText)
-      botMessage = Array.isArray(rasaResponse) && rasaResponse.length > 0
-        ? rasaResponse[0].text
-        : "I'm sorry, I couldn't process that request."
-    } catch (e) {
-      console.error('Error parsing Rasa response:', e)
-      botMessage = "I'm sorry, there was an error processing your request."
-    }
+    const responseData = await response.json()
+    console.log('Rasa API Response:', responseData)
+
+    // Extract the bot's response from Rasa's response format
+    const botResponse = responseData.messages?.[0]?.text || 
+                       responseData.text || 
+                       responseData.message ||
+                       "I apologize, but I'm having trouble understanding. Could you please rephrase that?"
 
     return new Response(
-      JSON.stringify({ response: botMessage }),
+      JSON.stringify({ response: botResponse }),
       { 
         headers: { 
           ...corsHeaders,
@@ -81,13 +67,14 @@ serve(async (req) => {
         },
       },
     )
-    */
   } catch (error) {
     console.error('Error in chat-support function:', error)
+    
+    // Send a more user-friendly error message while logging the full error
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        details: 'An error occurred while processing your request'
+        error: 'Sorry, I encountered an issue while processing your message. Please try again.',
+        details: error.message
       }),
       { 
         status: 500,
