@@ -21,29 +21,35 @@ serve(async (req) => {
       throw new Error('RASA_API_KEY is not configured')
     }
 
-    // Call Rasa API
-    const response = await fetch('https://api.rasa.com/v1/webhooks/rest/webhook', {
+    // Call Rasa API - using the standard Rasa REST endpoint format
+    const response = await fetch('https://api.rasa.ai/api/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${RASA_API_KEY}`,
       },
       body: JSON.stringify({ 
-        sender: "user",
-        message: message 
+        message: message,
+        sender: "user"
       }),
     })
 
+    console.log('Rasa API Response Status:', response.status)
+    const responseText = await response.text()
+    console.log('Rasa API Raw Response:', responseText)
+
     if (!response.ok) {
-      console.error('Rasa API error:', response.statusText)
-      throw new Error(`Rasa API error: ${response.statusText}`)
+      throw new Error(`Rasa API error: ${response.status} - ${responseText}`)
     }
 
-    const rasaResponse = await response.json()
-    console.log('Rasa response:', rasaResponse)
-
-    // Extract the text from Rasa's response
-    const botMessage = rasaResponse[0]?.text || "I'm sorry, I couldn't process that request."
+    let botMessage
+    try {
+      const rasaResponse = JSON.parse(responseText)
+      botMessage = rasaResponse.messages?.[0]?.text || "I'm sorry, I couldn't process that request."
+    } catch (e) {
+      console.error('Error parsing Rasa response:', e)
+      botMessage = "I'm sorry, there was an error processing your request."
+    }
 
     return new Response(
       JSON.stringify({ response: botMessage }),
@@ -57,7 +63,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: 'An error occurred while processing your request'
+      }),
       { 
         status: 500,
         headers: { 
