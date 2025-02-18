@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./components/AuthProvider";
 import { Toaster } from "./components/ui/toaster";
 import { ThemeProvider } from "next-themes";
+import { CustomerSupport } from "./components/chat/CustomerSupport";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -40,6 +41,7 @@ function App() {
             <Route path="/coming-soon" element={<ComingSoon />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <CustomerSupport />
           <Toaster />
         </AuthProvider>
       </Router>
