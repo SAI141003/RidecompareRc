@@ -16,12 +16,29 @@ serve(async (req) => {
     const { message } = await req.json()
     console.log('Received message:', message)
 
+    // For testing purposes, return a mock response
+    const mockResponse = {
+      response: `This is a test response to your message: "${message}"`
+    }
+
+    console.log('Sending mock response:', mockResponse)
+
+    return new Response(
+      JSON.stringify(mockResponse),
+      { 
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+
+    /* Commenting out Rasa integration for now to test basic functionality
     const RASA_API_KEY = Deno.env.get('RASA_API_KEY')
     if (!RASA_API_KEY) {
       throw new Error('RASA_API_KEY is not configured')
     }
 
-    // Using Rasa's webhook endpoint for direct message handling
     const response = await fetch('https://api.rasa.com/v1/webhooks/rest/webhook', {
       method: 'POST',
       headers: {
@@ -46,7 +63,6 @@ serve(async (req) => {
 
     let botMessage
     try {
-      // Webhook endpoint returns an array of messages
       const rasaResponse = JSON.parse(responseText)
       botMessage = Array.isArray(rasaResponse) && rasaResponse.length > 0
         ? rasaResponse[0].text
@@ -65,6 +81,7 @@ serve(async (req) => {
         },
       },
     )
+    */
   } catch (error) {
     console.error('Error in chat-support function:', error)
     return new Response(
