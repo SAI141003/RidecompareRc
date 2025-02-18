@@ -21,8 +21,8 @@ serve(async (req) => {
       throw new Error('RASA_API_KEY is not configured')
     }
 
-    // Call Rasa API - using the standard Rasa REST endpoint format
-    const response = await fetch('https://api.rasa.ai/api/v1/messages', {
+    // Call Rasa API with the correct endpoint and format
+    const response = await fetch('https://api.rasa.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({ 
         message: message,
-        sender: "user"
+        sender: "web_user"
       }),
     })
 
@@ -39,13 +39,16 @@ serve(async (req) => {
     console.log('Rasa API Raw Response:', responseText)
 
     if (!response.ok) {
-      throw new Error(`Rasa API error: ${response.status} - ${responseText}`)
+      const errorMessage = `Rasa API error: ${response.status} - ${responseText}`
+      console.error(errorMessage)
+      throw new Error(errorMessage)
     }
 
     let botMessage
     try {
       const rasaResponse = JSON.parse(responseText)
-      botMessage = rasaResponse.messages?.[0]?.text || "I'm sorry, I couldn't process that request."
+      // Handle the response format as per Rasa's documentation
+      botMessage = rasaResponse.text || rasaResponse.message || "I'm sorry, I couldn't process that request."
     } catch (e) {
       console.error('Error parsing Rasa response:', e)
       botMessage = "I'm sorry, there was an error processing your request."
@@ -61,7 +64,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in chat-support function:', error)
     return new Response(
       JSON.stringify({ 
         error: error.message,
