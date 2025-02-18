@@ -16,13 +16,52 @@ serve(async (req) => {
     const { message } = await req.json()
     console.log('Processing incoming message:', message)
 
-    // For now, let's return a mock response to verify the function works
-    const mockResponse = {
-      response: `You said: "${message}". This is a test response to verify the chat function is working.`
+    const rasaEndpoint = 'http://localhost:5005/webhooks/rest/webhook'
+    const apiKey = Deno.env.get('RASA_API_KEY')
+
+    if (!apiKey) {
+      console.error('RASA_API_KEY not found')
+      throw new Error('API key not configured')
+    }
+
+    console.log('Sending request to:', rasaEndpoint)
+    
+    const response = await fetch(rasaEndpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: Date.now().toString(),
+        message: message
+      })
+    })
+
+    console.log('Response status:', response.status)
+    const responseText = await response.text()
+    console.log('Raw response:', responseText)
+
+    if (!response.ok) {
+      throw new Error(`Rasa API error: ${response.status} - ${responseText}`)
+    }
+
+    let botResponse
+    try {
+      const parsed = JSON.parse(responseText)
+      // Rasa webhook responses are typically arrays
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        botResponse = parsed[0].text || "I couldn't process that request."
+      } else {
+        botResponse = parsed.message || parsed.text || "I couldn't process that request."
+      }
+    } catch (e) {
+      console.log('Error parsing JSON response:', e)
+      botResponse = "Sorry, I encountered an error processing your request."
     }
 
     return new Response(
-      JSON.stringify(mockResponse),
+      JSON.stringify({ response: botResponse }),
       { 
         headers: { 
           ...corsHeaders,
