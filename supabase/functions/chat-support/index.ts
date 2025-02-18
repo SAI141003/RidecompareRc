@@ -16,7 +16,7 @@ serve(async (req) => {
     const { message } = await req.json()
     console.log('Processing incoming message:', message)
 
-    const rasaEndpoint = 'https://api.rasa.ai/api/v1/messages'
+    const rasaEndpoint = 'https://api.rasa.ai/webhooks/rest/webhook'
     const apiKey = Deno.env.get('RASA_API_KEY')
 
     if (!apiKey) {
@@ -33,7 +33,7 @@ serve(async (req) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        sender_id: Date.now().toString(),
+        sender: Date.now().toString(),
         message: message
       })
     })
@@ -50,10 +50,15 @@ serve(async (req) => {
     let botResponse
     try {
       const parsed = JSON.parse(responseText)
-      botResponse = parsed.message || parsed.text || responseText
+      // Rasa webhook responses are typically arrays
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        botResponse = parsed[0].text || "I couldn't process that request."
+      } else {
+        botResponse = parsed.message || parsed.text || "I couldn't process that request."
+      }
     } catch (e) {
       console.log('Error parsing JSON response:', e)
-      botResponse = responseText
+      botResponse = "Sorry, I encountered an error processing your request."
     }
 
     return new Response(
