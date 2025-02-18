@@ -16,14 +16,20 @@ serve(async (req) => {
     const { message } = await req.json()
     console.log('Processing incoming message:', message)
 
-    const rasaEndpoint = 'http://localhost:5005/webhooks/rest/webhook'
+    const rasaUrl = Deno.env.get('RASA_URL')
     const apiKey = Deno.env.get('RASA_API_KEY')
+
+    if (!rasaUrl) {
+      console.error('RASA_URL not found')
+      throw new Error('Rasa URL not configured')
+    }
 
     if (!apiKey) {
       console.error('RASA_API_KEY not found')
       throw new Error('API key not configured')
     }
 
+    const rasaEndpoint = `${rasaUrl}/webhooks/rest/webhook`
     console.log('Sending request to:', rasaEndpoint)
     
     const response = await fetch(rasaEndpoint, {
