@@ -35,25 +35,25 @@ export const SettingsForm = () => {
   }
 
   return (
-    <Card className="p-6 space-y-6">
+    <Card className="p-6 space-y-6 bg-background border-border">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label className="text-base">Appearance</Label>
+          <Label className="text-base text-foreground">Appearance</Label>
           <p className="text-sm text-muted-foreground">
             Choose between light and dark mode
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Sun className="h-4 w-4" />
+          <Sun className="h-4 w-4 text-foreground" />
           <Switch
             checked={theme === "dark"}
             onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
           />
-          <Moon className="h-4 w-4" />
+          <Moon className="h-4 w-4 text-foreground" />
         </div>
       </div>
 
-      <div className="pt-4 border-t">
+      <div className="pt-4 border-t border-border">
         <Button
           variant="destructive"
           className="w-full"
