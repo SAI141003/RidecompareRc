@@ -25,6 +25,7 @@ export const SignInForm = ({
       <div className="space-y-2">
         <Input
           type="email"
+          name="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -32,11 +33,13 @@ export const SignInForm = ({
           className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
           disabled={loading}
           autoComplete="email"
+          aria-label="Email address"
         />
       </div>
       <div className="space-y-2">
         <Input
           type="password"
+          name="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -44,6 +47,7 @@ export const SignInForm = ({
           className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
           disabled={loading}
           autoComplete="current-password"
+          aria-label="Password"
         />
       </div>
       <Button 
