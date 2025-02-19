@@ -30,7 +30,7 @@ export const SignInForm = ({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
+          className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors text-black"
           disabled={loading}
           autoComplete="email"
           aria-label="Email address"
@@ -44,7 +44,7 @@ export const SignInForm = ({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
+          className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors text-black"
           disabled={loading}
           autoComplete="current-password"
           aria-label="Password"
