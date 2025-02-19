@@ -30,6 +30,8 @@ export const SignInForm = ({
           onChange={(e) => setEmail(e.target.value)}
           required
           className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
+          disabled={loading}
+          autoComplete="email"
         />
       </div>
       <div className="space-y-2">
@@ -40,6 +42,8 @@ export const SignInForm = ({
           onChange={(e) => setPassword(e.target.value)}
           required
           className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
+          disabled={loading}
+          autoComplete="current-password"
         />
       </div>
       <Button 

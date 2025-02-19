@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
@@ -16,7 +17,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting session:', error.message);
+        toast.error('Error connecting to authentication service');
+      }
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -26,6 +31,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (_event === 'SIGNED_IN') {
+        toast.success('Successfully signed in!');
+      } else if (_event === 'SIGNED_OUT') {
+        toast.success('Successfully signed out!');
+      }
     });
 
     return () => subscription.unsubscribe();
