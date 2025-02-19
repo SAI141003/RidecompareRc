@@ -1,9 +1,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Gift } from "lucide-react";
+import { Gift, ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Promotions = () => {
+  const navigate = useNavigate();
   const promotions = [
     {
       code: "RIDE10",
@@ -20,7 +22,17 @@ const Promotions = () => {
   return (
     <div className="min-h-screen bg-white text-black">
       <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">RideCompare Promotions</h1>
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/profile')}
+            className="hover:bg-gray-100"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          <h1 className="text-2xl font-bold">RideCompare Promotions</h1>
+        </div>
         
         <div className="grid gap-4">
           {promotions.map((promo, index) => (
