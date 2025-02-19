@@ -1,5 +1,5 @@
 
-import { ArrowLeft, Menu } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -22,14 +22,6 @@ export const Header = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigate("/profile")}
-            className="h-8 w-8"
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </div>
