@@ -15,24 +15,24 @@ const RideCompare = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-black">
       <div className="container mx-auto p-6 max-w-md">
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate('/profile')}
-            className="hover:bg-gray-800"
+            className="hover:bg-gray-100"
           >
             <ChevronLeft className="h-6 w-6" />
           </Button>
           <h1 className="text-2xl font-bold">RideCompare Premium</h1>
         </div>
         
-        <Card className="bg-gray-900 p-6 space-y-6">
+        <Card className="bg-white p-6 space-y-6 shadow-md">
           <div className="text-center">
             <h2 className="text-xl font-semibold">Premium Membership</h2>
-            <p className="text-gray-400 mt-2">Get the most out of RideCompare</p>
+            <p className="text-gray-600 mt-2">Get the most out of RideCompare</p>
             <div className="text-3xl font-bold mt-4">$2.00/month</div>
           </div>
 

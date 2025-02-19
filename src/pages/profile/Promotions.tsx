@@ -18,21 +18,21 @@ const Promotions = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-black">
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">RideCompare Promotions</h1>
         
         <div className="grid gap-4">
           {promotions.map((promo, index) => (
-            <Card key={index} className="bg-gray-900 p-6">
+            <Card key={index} className="bg-white p-6 shadow-md">
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Gift className="h-5 w-5 text-purple-500" />
                     <h3 className="font-semibold">{promo.description}</h3>
                   </div>
-                  <p className="text-sm text-gray-400">Code: {promo.code}</p>
-                  <p className="text-sm text-gray-400">Expires: {promo.expiry}</p>
+                  <p className="text-sm text-gray-600">Code: {promo.code}</p>
+                  <p className="text-sm text-gray-600">Expires: {promo.expiry}</p>
                 </div>
                 <Button variant="outline">
                   Apply
