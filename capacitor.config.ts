@@ -2,15 +2,17 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.ridecompare.app',
-  appName: 'ridecompare',
+  appId: 'com.ridecomparerce.app',
+  appName: 'RidecompareRc',
   webDir: 'dist',
   server: {
     url: 'http://localhost:8080',
     cleartext: true
   },
   ios: {
-    contentInset: 'always'
+    contentInset: 'always',
+    scheme: 'RidecompareRc',
+    limitsNavigationsToAppBoundDomains: true
   },
   plugins: {
     Geolocation: {
@@ -19,12 +21,6 @@ const config: CapacitorConfig = {
         requireDescriptions: true,
         locationWhenInUseDescription: "We need your location to find rides near you.",
         locationAlwaysDescription: "We need your location to find rides near you."
-      },
-      android: {
-        requireLocation: true,
-        requireLocationAlways: false,
-        requireCoarseLocation: true,
-        requireFineLocation: true
       }
     }
   }
