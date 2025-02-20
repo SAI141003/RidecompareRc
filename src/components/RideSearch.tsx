@@ -18,10 +18,15 @@ export const RideSearch = () => {
   const [pickupCoords, setPickupCoords] = useState<[number, number]>();
   const [dropoffCoords, setDropoffCoords] = useState<[number, number]>();
   const [isSearching, setIsSearching] = useState(false);
+  const [debug, setDebug] = useState<any>(null);
 
   const { data: prediction, isLoading: isPredicting } = useQuery({
     queryKey: ["price-prediction", pickup, dropoff],
-    queryFn: () => getPricePrediction(pickup, dropoff),
+    queryFn: async () => {
+      const result = await getPricePrediction(pickup, dropoff);
+      setDebug(result); // Store debug info
+      return result;
+    },
     enabled: !!(pickup && dropoff),
   });
 
@@ -92,6 +97,20 @@ export const RideSearch = () => {
                 <p className="text-sm text-yellow-700">
                   Surge pricing in effect ({prediction.details.surge_multiplier}x)
                 </p>
+              </div>
+            )}
+
+            {/* Debug Info */}
+            {debug && (
+              <div className="p-2 bg-gray-50 rounded-md text-xs font-mono">
+                <p>Distance: {debug.details?.estimated_distance.toFixed(2)} miles</p>
+                <p>Duration: {debug.details?.estimated_duration} mins</p>
+                <p>Base Fare: ${debug.details?.base_fare}</p>
+                <p>Distance Charge: ${debug.details?.distance_charge}</p>
+                <p>Time Charge: ${debug.details?.time_charge}</p>
+                <p>Service Fee: ${debug.details?.service_fee}</p>
+                <p>Surge: {debug.details?.surge_multiplier}x</p>
+                <p>Final Price: ${debug.predicted_price}</p>
               </div>
             )}
 
