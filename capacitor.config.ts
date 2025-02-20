@@ -10,7 +10,9 @@ const config: CapacitorConfig = {
     cleartext: true
   },
   ios: {
-    contentInset: 'always'
+    contentInset: 'always',
+    scheme: 'RidecompareRc',
+    limitsNavigationsToAppBoundDomains: true
   },
   plugins: {
     Geolocation: {
