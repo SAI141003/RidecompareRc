@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { RideOption } from "@/types/ride";
 import { getPricePrediction } from "@/services/priceService";
@@ -19,14 +19,21 @@ export const RideSearch = () => {
   const [dropoffCoords, setDropoffCoords] = useState<[number, number]>();
   const [isSearching, setIsSearching] = useState(false);
 
-  const { data: rides, isLoading, refetch } = useQuery({
+  const { data: prediction, isLoading: isPredicting } = useQuery({
+    queryKey: ["price-prediction", pickup, dropoff],
+    queryFn: () => getPricePrediction(pickup, dropoff),
+    enabled: !!(pickup && dropoff),
+  });
+
+  const { data: rides, isLoading: isLoadingRides, refetch } = useQuery({
     queryKey: ["rides", pickup, dropoff],
     queryFn: async () => {
-      const prediction = await getPricePrediction(pickup, dropoff);
       const rideOptions = await fetchRideOptions(pickup, dropoff);
       return rideOptions.map(ride => ({
         ...ride,
-        price: ride.price * (prediction.confidence_score > 0.8 ? 1 : 0.9)
+        price: ride.price * (prediction?.details?.surge_multiplier || 1),
+        surge: prediction?.details?.surge_multiplier > 1,
+        eta: prediction?.details?.estimated_duration || ride.eta,
       }));
     },
     enabled: false,
@@ -78,12 +85,22 @@ export const RideSearch = () => {
               onChange={setDropoff}
               onLocationSelect={setDropoffCoords}
             />
+
+            {prediction?.details?.surge_multiplier > 1 && (
+              <div className="flex items-center gap-2 p-2 bg-yellow-50 rounded-md">
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                <p className="text-sm text-yellow-700">
+                  Surge pricing in effect ({prediction.details.surge_multiplier}x)
+                </p>
+              </div>
+            )}
+
             <Button 
               onClick={handleSearch} 
               className="w-full"
-              disabled={isSearching}
+              disabled={isSearching || isPredicting}
             >
-              {isSearching ? (
+              {isSearching || isPredicting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 "Search Rides"
@@ -91,7 +108,7 @@ export const RideSearch = () => {
             </Button>
           </div>
 
-          {isLoading ? (
+          {(isLoadingRides || isPredicting) ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
             </div>

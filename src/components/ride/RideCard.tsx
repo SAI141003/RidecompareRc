@@ -1,7 +1,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Car, CarTaxiFront, TrendingUp } from "lucide-react";
+import { Car, CarTaxiFront, TrendingUp, Clock, Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { RideOption } from "@/types/ride";
 
 interface RideCardProps {
@@ -24,13 +30,26 @@ export const RideCard = ({ ride, onBook }: RideCardProps) => {
             <div className="text-sm text-gray-500 space-x-2">
               <span>{ride.capacity} seats</span>
               <span>•</span>
+              <Clock className="inline h-4 w-4 ml-1" />
               <span>{ride.eta} mins</span>
             </div>
           </div>
         </div>
         <div className="text-right">
-          <div className="flex items-center space-x-2">
-            <span className="font-bold">${ride.price.toFixed(2)}</span>
+          <div className="flex items-center justify-end space-x-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info className="h-4 w-4 text-gray-400" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Final price may vary based on actual route and traffic</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <span className="font-bold text-lg">
+              ${ride.price.toFixed(2)}
+            </span>
             {ride.surge && (
               <TrendingUp className="h-4 w-4 text-red-500" />
             )}
