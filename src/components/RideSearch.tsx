@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,41 +48,15 @@ export const RideSearch = () => {
   };
 
   const handleBookRide = async (ride: RideOption) => {
-    if (!user) {
-      toast.error("Please log in to book a ride");
-      return;
+    let appUrl = '';
+    if (ride.provider === 'uber') {
+      appUrl = 'https://m.uber.com/ul';
+    } else if (ride.provider === 'lyft') {
+      appUrl = 'https://lyft.com/ride';
     }
 
-    try {
-      const fraudCheck = await checkFraudRisk('book_ride', {
-        amount: ride.price,
-        ride_type: ride.type,
-        provider: ride.provider,
-      });
-
-      if (fraudCheck.status === 'suspicious') {
-        toast.error("Unable to process booking. Please contact support.");
-        return;
-      }
-
-      const { error } = await supabase
-        .from('rides')
-        .insert({
-          user_id: user.id,
-          provider: ride.provider,
-          ride_type: ride.type,
-          pickup_location: pickup,
-          dropoff_location: dropoff,
-          price: ride.price,
-          status: 'pending'
-        } satisfies Ride);
-
-      if (error) throw error;
-
-      toast.success("Ride booked successfully!");
-    } catch (error: any) {
-      toast.error(error.message);
-    }
+    window.open(appUrl, '_blank');
+    toast.success(`Redirecting to ${ride.provider.toUpperCase()}`);
   };
 
   return (

@@ -28,7 +28,19 @@ export const SearchResults = ({
   const handleBookRide = () => {
     const selectedOption = mockRideOptions.find(option => option.id === selectedRide);
     if (selectedOption) {
-      toast.success(`Booking ${selectedOption.name} for $${selectedOption.price.toFixed(2)}`);
+      // Determine which app to open based on the provider
+      let appUrl = '';
+      if (selectedOption.provider === 'uber') {
+        // Uber deep linking
+        appUrl = 'https://m.uber.com/ul';
+      } else if (selectedOption.provider === 'lyft') {
+        // Lyft deep linking
+        appUrl = 'https://lyft.com/ride';
+      }
+
+      // Open the respective app or website
+      window.open(appUrl, '_blank');
+      toast.success(`Redirecting to ${selectedOption.provider.toUpperCase()}`);
     }
   };
 
