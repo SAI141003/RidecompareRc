@@ -8,10 +8,51 @@ interface PricePredictionRequest {
   hour_of_day?: number;
 }
 
+interface GeocodingResult {
+  lat: number;
+  lon: number;
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Function to get coordinates from location string using OpenStreetMap Nominatim API
+async function getCoordinates(location: string): Promise<GeocodingResult> {
+  const encodedLocation = encodeURIComponent(location);
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/search?q=${encodedLocation}&format=json&limit=1`,
+    {
+      headers: {
+        'User-Agent': 'RideShareApp/1.0',
+      },
+    }
+  );
+  const data = await response.json();
+  
+  if (!data || data.length === 0) {
+    throw new Error(`Could not geocode location: ${location}`);
+  }
+
+  return {
+    lat: parseFloat(data[0].lat),
+    lon: parseFloat(data[0].lon),
+  };
+}
+
+// Calculate distance between two points using Haversine formula
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3959; // Earth's radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Distance in miles
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -22,6 +63,16 @@ serve(async (req) => {
   try {
     const { location_from, location_to, day_of_week, hour_of_day } = await req.json() as PricePredictionRequest;
     
+    // Get coordinates for both locations
+    const fromCoords = await getCoordinates(location_from);
+    const toCoords = await getCoordinates(location_to);
+
+    // Calculate actual distance
+    const distance = calculateDistance(
+      fromCoords.lat, fromCoords.lon,
+      toCoords.lat, toCoords.lon
+    );
+
     // Get current time components if not provided
     const now = new Date();
     const currentDayOfWeek = day_of_week ?? now.getDay();
@@ -33,11 +84,11 @@ serve(async (req) => {
     const perMinuteRate = 0.50;
     const serviceFee = 2.00;
 
-    // Mock distance (5 miles) and duration (15 minutes) for demo
-    const distance = 5;
-    const estimatedDuration = 15;
+    // Estimate duration based on distance (assuming average speed of 30 mph)
+    const averageSpeed = 30; // mph
+    const estimatedDuration = Math.ceil((distance / averageSpeed) * 60); // Convert to minutes
 
-    // Calculate surge based on time
+    // Calculate surge based on time and distance
     const isPeakHour = (currentHourOfDay >= 7 && currentHourOfDay <= 9) || 
                       (currentHourOfDay >= 16 && currentHourOfDay <= 19);
     const isWeekend = currentDayOfWeek === 0 || currentDayOfWeek === 6;
@@ -45,6 +96,8 @@ serve(async (req) => {
     let surgeMultiplier = 1.0;
     if (isPeakHour) surgeMultiplier *= 1.5;
     if (isWeekend) surgeMultiplier *= 1.2;
+    // Additional surge for longer distances
+    if (distance > 20) surgeMultiplier *= 1.1;
 
     // Calculate final price
     const distanceCharge = distance * perMileRate;
@@ -55,6 +108,8 @@ serve(async (req) => {
     console.log('Price prediction calculation:', {
       location_from,
       location_to,
+      distance,
+      estimatedDuration,
       basePrice,
       distanceCharge,
       timeCharge,
