@@ -23,23 +23,34 @@ export const RideSearch = () => {
   const { data: prediction, isLoading: isPredicting } = useQuery({
     queryKey: ["price-prediction", pickup, dropoff],
     queryFn: async () => {
+      console.log('Fetching prediction for:', pickup, dropoff);
       const result = await getPricePrediction(pickup, dropoff);
-      setDebug(result); // Store debug info
+      console.log('Prediction result:', result);
+      setDebug(result);
       return result;
     },
     enabled: !!(pickup && dropoff),
   });
 
   const { data: rides, isLoading: isLoadingRides, refetch } = useQuery({
-    queryKey: ["rides", pickup, dropoff],
+    queryKey: ["rides", pickup, dropoff, prediction],
     queryFn: async () => {
-      const rideOptions = await fetchRideOptions(pickup, dropoff);
-      return rideOptions.map(ride => ({
-        ...ride,
-        price: ride.price * (prediction?.details?.surge_multiplier || 1),
-        surge: prediction?.details?.surge_multiplier > 1,
-        eta: prediction?.details?.estimated_duration || ride.eta,
-      }));
+      const baseRideOptions = await fetchRideOptions(pickup, dropoff);
+      
+      // Apply the predicted price adjustments
+      return baseRideOptions.map(ride => {
+        const basePrice = ride.price;
+        const adjustedPrice = prediction?.predicted_price 
+          ? (basePrice * (prediction.details.surge_multiplier || 1))
+          : basePrice;
+
+        return {
+          ...ride,
+          price: Number(adjustedPrice.toFixed(2)),
+          surge: prediction?.details?.surge_multiplier > 1,
+          eta: prediction?.details?.estimated_duration || ride.eta,
+        };
+      });
     },
     enabled: false,
   });
@@ -103,14 +114,16 @@ export const RideSearch = () => {
             {/* Debug Info */}
             {debug && (
               <div className="p-2 bg-gray-50 rounded-md text-xs font-mono">
+                <p>From: {pickup}</p>
+                <p>To: {dropoff}</p>
                 <p>Distance: {debug.details?.estimated_distance.toFixed(2)} miles</p>
                 <p>Duration: {debug.details?.estimated_duration} mins</p>
-                <p>Base Fare: ${debug.details?.base_fare}</p>
-                <p>Distance Charge: ${debug.details?.distance_charge}</p>
-                <p>Time Charge: ${debug.details?.time_charge}</p>
-                <p>Service Fee: ${debug.details?.service_fee}</p>
+                <p>Base Fare: ${debug.details?.base_fare.toFixed(2)}</p>
+                <p>Distance Charge: ${debug.details?.distance_charge.toFixed(2)}</p>
+                <p>Time Charge: ${debug.details?.time_charge.toFixed(2)}</p>
+                <p>Service Fee: ${debug.details?.service_fee.toFixed(2)}</p>
                 <p>Surge: {debug.details?.surge_multiplier}x</p>
-                <p>Final Price: ${debug.predicted_price}</p>
+                <p>Final Price: ${debug.predicted_price.toFixed(2)}</p>
               </div>
             )}
 
