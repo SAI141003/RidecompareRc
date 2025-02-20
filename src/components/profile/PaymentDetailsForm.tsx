@@ -15,13 +15,13 @@ export const PaymentDetailsForm = ({
   return (
     <div className="space-y-4">
       <div className="relative">
-        <CreditCard className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+        <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
           type="text"
           placeholder="Card Number"
           value={paymentDetails.cardNumber}
           onChange={(e) => onChange("cardNumber", e.target.value)}
-          className="pl-10 bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
+          className="pl-10"
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
@@ -30,7 +30,6 @@ export const PaymentDetailsForm = ({
           placeholder="MM/YY"
           value={paymentDetails.cardExpiry}
           onChange={(e) => onChange("cardExpiry", e.target.value)}
-          className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
         />
         <Input
           type="password"
@@ -38,7 +37,6 @@ export const PaymentDetailsForm = ({
           value={paymentDetails.cardCVV || ""}
           onChange={(e) => onChange("cardCVV", e.target.value)}
           maxLength={4}
-          className="bg-white/50 backdrop-blur-sm border-white/20 focus:border-purple-500 transition-colors"
         />
       </div>
     </div>

@@ -20,14 +20,13 @@ const Promotions = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto p-6">
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate('/profile')}
-            className="hover:bg-gray-100"
           >
             <ChevronLeft className="h-6 w-6" />
           </Button>
@@ -36,15 +35,15 @@ const Promotions = () => {
         
         <div className="grid gap-4">
           {promotions.map((promo, index) => (
-            <Card key={index} className="bg-white p-6 shadow-md">
+            <Card key={index} className="p-6">
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Gift className="h-5 w-5 text-purple-500" />
                     <h3 className="font-semibold">{promo.description}</h3>
                   </div>
-                  <p className="text-sm text-gray-600">Code: {promo.code}</p>
-                  <p className="text-sm text-gray-600">Expires: {promo.expiry}</p>
+                  <p className="text-sm text-muted-foreground">Code: {promo.code}</p>
+                  <p className="text-sm text-muted-foreground">Expires: {promo.expiry}</p>
                 </div>
                 <Button variant="outline">
                   Apply
