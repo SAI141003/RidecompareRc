@@ -37,18 +37,28 @@ export const RideSearch = () => {
     queryFn: async () => {
       const baseRideOptions = await fetchRideOptions(pickup, dropoff);
       
-      // Apply the predicted price adjustments
+      if (!prediction?.predicted_price) {
+        return baseRideOptions;
+      }
+
+      // Calculate price multipliers based on vehicle type
+      const typeMultipliers = {
+        "UberX": 1,
+        "UberXL": 1.5,
+        "Lyft": 0.95, // Slight discount for Lyft
+        "Lyft XL": 1.45,
+      };
+
+      // Apply the predicted price and adjustments
       return baseRideOptions.map(ride => {
-        const basePrice = ride.price;
-        const adjustedPrice = prediction?.predicted_price 
-          ? (basePrice * (prediction.details.surge_multiplier || 1))
-          : basePrice;
+        const multiplier = typeMultipliers[ride.type as keyof typeof typeMultipliers] || 1;
+        const adjustedPrice = prediction.predicted_price * multiplier;
 
         return {
           ...ride,
           price: Number(adjustedPrice.toFixed(2)),
-          surge: prediction?.details?.surge_multiplier > 1,
-          eta: prediction?.details?.estimated_duration || ride.eta,
+          surge: prediction.details?.surge_multiplier > 1,
+          eta: prediction.details?.estimated_duration || ride.eta,
         };
       });
     },
