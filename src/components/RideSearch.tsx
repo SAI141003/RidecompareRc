@@ -1,23 +1,18 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from "@/components/AuthProvider";
-import type { Database } from "@/integrations/supabase/types";
 import type { RideOption } from "@/types/ride";
-import { RideCard } from "@/components/ride/RideCard";
-import { getPricePrediction, checkFraudRisk } from "@/services/priceService";
+import { getPricePrediction } from "@/services/priceService";
 import { fetchRideOptions } from "@/services/rideService";
 import Map from "@/components/Map";
 import { LocationSearch } from "@/components/LocationSearch";
 import { Button } from "@/components/ui/button";
-
-type Ride = Database['public']['Tables']['rides']['Insert'];
+import { RideCard } from "@/components/ride/RideCard";
 
 export const RideSearch = () => {
-  const { user } = useAuth();
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
   const [pickupCoords, setPickupCoords] = useState<[number, number]>();
