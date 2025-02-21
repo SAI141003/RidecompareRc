@@ -7,4 +7,9 @@ export interface RideOption {
   price: number;
   eta: number;
   surge: boolean;
+  name: string;
+  time: number;
+  pickup_location: string;
+  dropoff_location: string;
+  selected?: boolean;
 }
