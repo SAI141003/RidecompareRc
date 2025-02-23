@@ -120,10 +120,18 @@ export const connectProvider = async (provider: 'uber' | 'lyft') => {
 
 // Function to disconnect a ride provider account
 export const disconnectProvider = async (provider: 'uber' | 'lyft') => {
+  // Get the current user's ID first
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('User must be logged in to disconnect a provider');
+  }
+
   const { error } = await supabase
     .from('service_providers')
     .delete()
-    .eq('provider_type', provider);
+    .eq('provider_type', provider)
+    .eq('user_id', user.id);
 
   if (error) {
     throw error;
@@ -132,9 +140,17 @@ export const disconnectProvider = async (provider: 'uber' | 'lyft') => {
 
 // Function to get connected providers for the current user
 export const getConnectedProviders = async () => {
+  // Get the current user's ID first
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('User must be logged in to get connected providers');
+  }
+
   const { data, error } = await supabase
     .from('service_providers')
     .select('provider_type, created_at')
+    .eq('user_id', user.id)
     .order('provider_type');
 
   if (error) {
