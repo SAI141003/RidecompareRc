@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,7 @@ import type { Hotel, HotelSearchParams } from "@/types/hotel";
 import { searchHotels } from "@/services/hotelService";
 import { HotelCard } from "./HotelCard";
 import { toast } from "sonner";
+import { HotelDetailsDialog } from "./HotelDetailsDialog";
 
 export const HotelSearch = () => {
   const [location, setLocation] = useState("");
@@ -19,6 +19,7 @@ export const HotelSearch = () => {
   const [rooms, setRooms] = useState(1);
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
 
   const handleSearch = async () => {
     try {
@@ -40,7 +41,7 @@ export const HotelSearch = () => {
   };
 
   const handleHotelSelect = (hotel: Hotel) => {
-    toast.success(`Selected ${hotel.name}. Booking feature coming soon!`);
+    setSelectedHotel(hotel);
   };
 
   return (
@@ -153,6 +154,12 @@ export const HotelSearch = () => {
           ))}
         </div>
       )}
+
+      <HotelDetailsDialog
+        hotel={selectedHotel}
+        isOpen={!!selectedHotel}
+        onClose={() => setSelectedHotel(null)}
+      />
     </div>
   );
 };
