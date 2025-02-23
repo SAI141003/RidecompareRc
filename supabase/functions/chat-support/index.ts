@@ -29,10 +29,9 @@ serve(async (req) => {
       throw new Error('API key not configured')
     }
 
-    const rasaEndpoint = `${rasaUrl}/webhooks/rest/webhook`
-    console.log('Sending request to:', rasaEndpoint)
+    console.log('Sending request to:', `${rasaUrl}/webhooks/rest/webhook`)
     
-    const response = await fetch(rasaEndpoint, {
+    const response = await fetch(`${rasaUrl}/webhooks/rest/webhook`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -59,7 +58,7 @@ serve(async (req) => {
       if (Array.isArray(parsed) && parsed.length > 0) {
         botResponse = parsed[0].text || "I couldn't process that request."
       } else {
-        botResponse = parsed.message || parsed.text || "I couldn't process that request."
+        botResponse = "I couldn't process that request."
       }
     } catch (e) {
       console.log('Error parsing JSON response:', e)
