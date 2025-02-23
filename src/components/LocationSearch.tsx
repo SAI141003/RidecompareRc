@@ -15,13 +15,15 @@ interface LocationSearchProps {
   value: string;
   onChange: (value: string) => void;
   onLocationSelect: (location: [number, number]) => void;
+  className?: string; // Added className prop
 }
 
 export const LocationSearch = ({
   placeholder,
   value,
   onChange,
-  onLocationSelect
+  onLocationSelect,
+  className
 }: LocationSearchProps) => {
   const [suggestions, setSuggestions] = useState<Location[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -64,7 +66,7 @@ export const LocationSearch = ({
             onChange(e.target.value);
             setShowSuggestions(true);
           }}
-          className="pl-12"
+          className={`pl-12 ${className}`}
           onFocus={() => setShowSuggestions(true)}
         />
       </div>
