@@ -16,7 +16,7 @@ export const fetchRideOptions = async (pickup: string, dropoff: string): Promise
   const baseOptions: RideOption[] = [
     {
       id: "uber-x",
-      provider: "uber",
+      provider: "uber" as const,
       type: "UberX",
       name: "UberX",
       capacity: 4,
@@ -29,7 +29,7 @@ export const fetchRideOptions = async (pickup: string, dropoff: string): Promise
     },
     {
       id: "uber-xl",
-      provider: "uber", 
+      provider: "uber" as const, 
       type: "UberXL",
       name: "UberXL",
       capacity: 6,
@@ -42,7 +42,7 @@ export const fetchRideOptions = async (pickup: string, dropoff: string): Promise
     },
     {
       id: "lyft-standard",
-      provider: "lyft",
+      provider: "lyft" as const,
       type: "Lyft",
       name: "Lyft Standard",
       capacity: 4,
@@ -55,7 +55,7 @@ export const fetchRideOptions = async (pickup: string, dropoff: string): Promise
     },
     {
       id: "lyft-xl",
-      provider: "lyft",
+      provider: "lyft" as const,
       type: "Lyft XL",
       name: "Lyft XL",
       capacity: 6,
@@ -85,6 +85,13 @@ export const fetchRideOptions = async (pickup: string, dropoff: string): Promise
 
 // Function to connect a ride provider account
 export const connectProvider = async (provider: 'uber' | 'lyft') => {
+  // Get the current user's ID
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('User must be logged in to connect a provider');
+  }
+
   // In a real implementation, this would redirect to the provider's OAuth flow
   const mockToken = {
     access_token: `mock_${provider}_token_${Date.now()}`,
@@ -95,6 +102,7 @@ export const connectProvider = async (provider: 'uber' | 'lyft') => {
   const { data, error } = await supabase
     .from('service_providers')
     .upsert({
+      user_id: user.id,
       provider_type: provider,
       access_token: mockToken.access_token,
       refresh_token: mockToken.refresh_token,
