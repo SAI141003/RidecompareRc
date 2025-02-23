@@ -1,5 +1,6 @@
 
 import { RideSearch } from "@/components/RideSearch";
+import { HotelSearch } from "@/components/hotel/HotelSearch";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
@@ -10,11 +11,12 @@ import { useEffect, useState } from "react";
 const Index = () => {
   const features = ["Google Flights", "DoorDash", "Skip", "Instacart"];
   const [currentFeature, setCurrentFeature] = useState(0);
+  const [activeTab, setActiveTab] = useState<'rides' | 'hotels'>('rides');
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentFeature((prev) => (prev + 1) % features.length);
-    }, 2000); // Change feature every 2 seconds
+    }, 2000);
 
     return () => clearInterval(interval);
   }, []);
@@ -31,8 +33,22 @@ const Index = () => {
             Welcome to RideCompare
           </h1>
           <p className="text-sm text-gray-600 text-center max-w-sm">
-            Your journey begins here. Find and book rides to your destination with ease.
+            Your journey begins here. Find and book rides and hotels with ease.
           </p>
+          <div className="flex space-x-4">
+            <Button
+              variant={activeTab === 'rides' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('rides')}
+            >
+              Rides
+            </Button>
+            <Button
+              variant={activeTab === 'hotels' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('hotels')}
+            >
+              Hotels
+            </Button>
+          </div>
           <Link to="/coming-soon">
             <Button 
               variant="outline" 
@@ -51,7 +67,11 @@ const Index = () => {
           </Link>
         </div>
 
-        <RideSearch />
+        {activeTab === 'rides' ? (
+          <RideSearch />
+        ) : (
+          <HotelSearch />
+        )}
       </main>
       <BottomNav />
     </div>
