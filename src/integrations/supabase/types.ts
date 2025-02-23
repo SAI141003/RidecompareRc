@@ -330,6 +330,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      provider_type: "uber" | "lyft"
       ride_provider: "uber" | "lyft" | "other"
       ride_status: "pending" | "confirmed" | "completed" | "cancelled"
       ride_type: "economy" | "premium" | "luxury"

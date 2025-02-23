@@ -13,7 +13,7 @@ export const fetchRideOptions = async (pickup: string, dropoff: string): Promise
   await new Promise(resolve => setTimeout(resolve, 1000));
 
   // Base prices that will be adjusted based on connected accounts
-  const baseOptions = [
+  const baseOptions: RideOption[] = [
     {
       id: "uber-x",
       provider: "uber",
@@ -89,7 +89,7 @@ export const connectProvider = async (provider: 'uber' | 'lyft') => {
   const mockToken = {
     access_token: `mock_${provider}_token_${Date.now()}`,
     refresh_token: `mock_${provider}_refresh_${Date.now()}`,
-    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Convert Date to ISO string
   };
 
   const { data, error } = await supabase
