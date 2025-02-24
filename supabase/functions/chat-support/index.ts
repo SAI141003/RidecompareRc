@@ -1,24 +1,27 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { corsHeaders } from '../_shared/cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+interface RasaResponse {
+  recipient_id: string;
+  text: string;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const { message } = await req.json()
-    console.log('Processing incoming message:', message)
 
-    const rasaApiKey = Deno.env.get('RASA_API_KEY')
-    if (!rasaApiKey) {
+    if (!message) {
+      throw new Error('No message provided')
+    }
+
+    const RASA_API_KEY = Deno.env.get('RASA_API_KEY')
+    if (!RASA_API_KEY) {
       throw new Error('RASA API key not configured')
     }
 
@@ -27,47 +30,43 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${rasaApiKey}`
+        'Authorization': `Bearer ${RASA_API_KEY}`
       },
       body: JSON.stringify({
         sender: "user",
         message: message
-      }),
-    });
+      })
+    })
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('RASA API Error:', errorText);
-      throw new Error(`RASA API error: ${response.status}`);
+      throw new Error(`Rasa server error: ${response.statusText}`)
     }
 
-    const data = await response.json();
-    // RASA returns an array of responses, we'll take the first one
-    const botResponse = data[0]?.text || "I'm sorry, I couldn't understand that.";
+    const rasaResponses: RasaResponse[] = await response.json()
+    
+    // Get the first response text or fallback to a default message
+    const botResponse = rasaResponses[0]?.text || "I'm sorry, I couldn't process that request."
 
     return new Response(
-      JSON.stringify({ response: botResponse }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-  } catch (error) {
-    console.error('Chat support error:', error)
-    return new Response(
-      JSON.stringify({ 
-        error: 'Failed to process message',
-        details: error.message 
+      JSON.stringify({
+        response: botResponse
       }),
-      { 
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      },
+    )
+
+  } catch (error) {
+    console.error('Error:', error.message)
+    return new Response(
+      JSON.stringify({
+        error: error.message
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
+      },
     )
   }
 })
