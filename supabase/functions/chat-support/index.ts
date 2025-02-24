@@ -17,56 +17,33 @@ serve(async (req) => {
     const { message } = await req.json()
     console.log('Processing incoming message:', message)
 
-    const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY')
-    if (!perplexityApiKey) {
-      throw new Error('Perplexity API key not configured')
+    const rasaApiKey = Deno.env.get('RASA_API_KEY')
+    if (!rasaApiKey) {
+      throw new Error('RASA API key not configured')
     }
 
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    // Make request to RASA server
+    const response = await fetch('http://your-rasa-server:5005/webhooks/rest/webhook', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${perplexityApiKey}`,
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${rasaApiKey}`
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-small-128k-online',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a helpful and friendly customer support agent for a ride-sharing comparison app called RideCompare. 
-            You help users with:
-            - Comparing ride prices between Uber and Lyft
-            - Finding the best ride options
-            - Understanding surge pricing
-            - Account-related questions
-            - General app usage
-            Be precise and concise in your responses.`
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ],
-        temperature: 0.2,
-        top_p: 0.9,
-        max_tokens: 1000,
-        return_images: false,
-        return_related_questions: false,
-        search_domain_filter: ['perplexity.ai'],
-        search_recency_filter: 'month',
-        frequency_penalty: 1,
-        presence_penalty: 0
+        sender: "user",
+        message: message
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('API Error:', errorText);
-      throw new Error(`Perplexity API error: ${response.status}`);
+      console.error('RASA API Error:', errorText);
+      throw new Error(`RASA API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const botResponse = data.choices[0].message.content;
+    // RASA returns an array of responses, we'll take the first one
+    const botResponse = data[0]?.text || "I'm sorry, I couldn't understand that.";
 
     return new Response(
       JSON.stringify({ response: botResponse }),
