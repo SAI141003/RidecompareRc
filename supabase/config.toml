@@ -4,3 +4,5 @@ project_id = "lnbtylngdapmaxithsrl"
 [functions.chat-support]
 verify_jwt = false
 
+[functions.chat-support.environment]
+RASA_API_KEY = "your_rasa_api_key_here"
