@@ -25,8 +25,8 @@ serve(async (req) => {
       throw new Error('RASA API key not configured')
     }
 
-    // Make request to local Rasa server
-    const response = await fetch('http://localhost:5005/webhooks/rest/webhook', {
+    // Make request to your Rasa server - replace with your actual Rasa server URL
+    const response = await fetch('https://your-rasa-server-url/webhooks/rest/webhook', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -39,10 +39,12 @@ serve(async (req) => {
     })
 
     if (!response.ok) {
+      console.error('Rasa server error:', await response.text());
       throw new Error(`Rasa server error: ${response.statusText}`)
     }
 
     const rasaResponses: RasaResponse[] = await response.json()
+    console.log('Rasa response:', rasaResponses);
     
     // Get the first response text or fallback to a default message
     const botResponse = rasaResponses[0]?.text || "I'm sorry, I couldn't process that request."
