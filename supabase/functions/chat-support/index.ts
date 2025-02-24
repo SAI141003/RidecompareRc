@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,20 +17,48 @@ serve(async (req) => {
     const { message } = await req.json()
     console.log('Processing incoming message:', message)
 
-    // Simple response logic
-    let response = "I'm sorry, I'm a simple bot for now. I understand you said: " + message;
-
-    // Add some basic responses
-    if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
-      response = "Hello! How can I help you today?";
-    } else if (message.toLowerCase().includes('help')) {
-      response = "I'm here to help! What do you need assistance with?";
-    } else if (message.toLowerCase().includes('bye')) {
-      response = "Goodbye! Have a great day!";
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured')
     }
 
+    // Make request to OpenAI API
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a helpful and friendly customer support agent for a ride-sharing comparison app called RideCompare. 
+            You help users with:
+            - Comparing ride prices between Uber and Lyft
+            - Finding the best ride options
+            - Understanding surge pricing
+            - Account-related questions
+            - General app usage
+            Be concise but friendly in your responses.`
+          },
+          { role: 'user', content: message }
+        ],
+        max_tokens: 150,
+        temperature: 0.7,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const botResponse = data.choices[0].message.content
+
     return new Response(
-      JSON.stringify({ response }),
+      JSON.stringify({ response: botResponse }),
       { 
         headers: { 
           ...corsHeaders,
