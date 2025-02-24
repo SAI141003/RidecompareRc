@@ -22,8 +22,8 @@ serve(async (req) => {
       throw new Error('RASA API key not configured')
     }
 
-    // Make request to RASA server
-    const response = await fetch('http://your-rasa-server:5005/webhooks/rest/webhook', {
+    // Make request to local Rasa server
+    const response = await fetch('http://localhost:5005/webhooks/rest/webhook', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
