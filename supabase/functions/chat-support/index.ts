@@ -17,20 +17,19 @@ serve(async (req) => {
     const { message } = await req.json()
     console.log('Processing incoming message:', message)
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured')
+    const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY')
+    if (!perplexityApiKey) {
+      throw new Error('Perplexity API key not configured')
     }
 
-    // Make request to OpenAI API
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${perplexityApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'llama-3.1-sonar-small-128k-online',
         messages: [
           {
             role: 'system',
@@ -41,21 +40,33 @@ serve(async (req) => {
             - Understanding surge pricing
             - Account-related questions
             - General app usage
-            Be concise but friendly in your responses.`
+            Be precise and concise in your responses.`
           },
-          { role: 'user', content: message }
+          {
+            role: 'user',
+            content: message
+          }
         ],
-        max_tokens: 150,
-        temperature: 0.7,
+        temperature: 0.2,
+        top_p: 0.9,
+        max_tokens: 1000,
+        return_images: false,
+        return_related_questions: false,
+        search_domain_filter: ['perplexity.ai'],
+        search_recency_filter: 'month',
+        frequency_penalty: 1,
+        presence_penalty: 0
       }),
-    })
+    });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`)
+      const errorText = await response.text();
+      console.error('API Error:', errorText);
+      throw new Error(`Perplexity API error: ${response.status}`);
     }
 
-    const data = await response.json()
-    const botResponse = data.choices[0].message.content
+    const data = await response.json();
+    const botResponse = data.choices[0].message.content;
 
     return new Response(
       JSON.stringify({ response: botResponse }),
