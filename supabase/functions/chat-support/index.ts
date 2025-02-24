@@ -16,57 +16,20 @@ serve(async (req) => {
     const { message } = await req.json()
     console.log('Processing incoming message:', message)
 
-    const rasaUrl = Deno.env.get('RASA_URL')
-    const apiKey = Deno.env.get('RASA_API_KEY')
+    // Simple response logic
+    let response = "I'm sorry, I'm a simple bot for now. I understand you said: " + message;
 
-    if (!rasaUrl) {
-      console.error('RASA_URL not found')
-      throw new Error('Rasa URL not configured')
-    }
-
-    if (!apiKey) {
-      console.error('RASA_API_KEY not found')
-      throw new Error('API key not configured')
-    }
-
-    console.log('Sending request to:', `${rasaUrl}/webhooks/rest/webhook`)
-    
-    const response = await fetch(`${rasaUrl}/webhooks/rest/webhook`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        sender: Date.now().toString(),
-        message: message
-      })
-    })
-
-    console.log('Response status:', response.status)
-    const responseText = await response.text()
-    console.log('Raw response:', responseText)
-
-    if (!response.ok) {
-      throw new Error(`Rasa API error: ${response.status} - ${responseText}`)
-    }
-
-    let botResponse
-    try {
-      const parsed = JSON.parse(responseText)
-      // Rasa webhook responses are typically arrays
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        botResponse = parsed[0].text || "I couldn't process that request."
-      } else {
-        botResponse = "I couldn't process that request."
-      }
-    } catch (e) {
-      console.log('Error parsing JSON response:', e)
-      botResponse = "Sorry, I encountered an error processing your request."
+    // Add some basic responses
+    if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+      response = "Hello! How can I help you today?";
+    } else if (message.toLowerCase().includes('help')) {
+      response = "I'm here to help! What do you need assistance with?";
+    } else if (message.toLowerCase().includes('bye')) {
+      response = "Goodbye! Have a great day!";
     }
 
     return new Response(
-      JSON.stringify({ response: botResponse }),
+      JSON.stringify({ response }),
       { 
         headers: { 
           ...corsHeaders,

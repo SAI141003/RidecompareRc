@@ -21,7 +21,22 @@ export const CustomerSupport = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Add welcome message when chat is opened
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      setMessages([
+        {
+          id: "welcome",
+          content: "Hello! How can I help you today?",
+          isUser: false,
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  }, [isOpen, messages.length]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -50,6 +65,10 @@ export const CustomerSupport = () => {
 
       if (error) throw error;
 
+      if (!data?.response) {
+        throw new Error('No response received from support');
+      }
+
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
         content: data.response,
@@ -59,15 +78,22 @@ export const CustomerSupport = () => {
 
       setMessages((prev) => [...prev, botResponse]);
     } catch (error: any) {
-      toast.error("Failed to get response from support");
       console.error("Chat error:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "I'm sorry, I'm having trouble responding right now. Please try again later.",
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+      toast.error("Failed to get response from support");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button 
           variant="outline" 
@@ -103,6 +129,13 @@ export const CustomerSupport = () => {
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-muted max-w-[80%] rounded-lg px-4 py-2">
+                  <p className="text-sm">Typing...</p>
+                </div>
+              </div>
+            )}
           </div>
         </ScrollArea>
 
