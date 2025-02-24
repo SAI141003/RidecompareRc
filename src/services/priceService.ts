@@ -7,6 +7,8 @@ export const getPricePrediction = async (
   day_of_week?: number,
   hour_of_day?: number
 ) => {
+  console.log('Fetching price prediction for:', { location_from, location_to });
+  
   const { data, error } = await supabase.functions.invoke('predict-ride-price', {
     body: {
       location_from,
@@ -16,7 +18,12 @@ export const getPricePrediction = async (
     },
   });
 
-  if (error) throw error;
+  if (error) {
+    console.error('Price prediction error:', error);
+    throw error;
+  }
+
+  console.log('Price prediction response:', data);
   return data;
 };
 

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { RideOption } from "@/types/ride";
 import { getPricePrediction } from "@/services/priceService";
@@ -18,16 +18,49 @@ export const RideSearch = () => {
   const [pickupCoords, setPickupCoords] = useState<[number, number]>();
   const [dropoffCoords, setDropoffCoords] = useState<[number, number]>();
   const [isSearching, setIsSearching] = useState(false);
+  const [debug, setDebug] = useState<any>(null);
 
-  const { data: rides, isLoading, refetch } = useQuery({
-    queryKey: ["rides", pickup, dropoff],
+  const { data: prediction, isLoading: isPredicting } = useQuery({
+    queryKey: ["price-prediction", pickup, dropoff],
     queryFn: async () => {
-      const prediction = await getPricePrediction(pickup, dropoff);
-      const rideOptions = await fetchRideOptions(pickup, dropoff);
-      return rideOptions.map(ride => ({
-        ...ride,
-        price: ride.price * (prediction.confidence_score > 0.8 ? 1 : 0.9)
-      }));
+      console.log('Fetching prediction for:', pickup, dropoff);
+      const result = await getPricePrediction(pickup, dropoff);
+      console.log('Prediction result:', result);
+      setDebug(result);
+      return result;
+    },
+    enabled: !!(pickup && dropoff),
+  });
+
+  const { data: rides, isLoading: isLoadingRides, refetch } = useQuery({
+    queryKey: ["rides", pickup, dropoff, prediction],
+    queryFn: async () => {
+      const baseRideOptions = await fetchRideOptions(pickup, dropoff);
+      
+      if (!prediction?.predicted_price) {
+        return baseRideOptions;
+      }
+
+      // Calculate price multipliers based on vehicle type
+      const typeMultipliers = {
+        "UberX": 1,
+        "UberXL": 1.5,
+        "Lyft": 0.95, // Slight discount for Lyft
+        "Lyft XL": 1.45,
+      };
+
+      // Apply the predicted price and adjustments
+      return baseRideOptions.map(ride => {
+        const multiplier = typeMultipliers[ride.type as keyof typeof typeMultipliers] || 1;
+        const adjustedPrice = prediction.predicted_price * multiplier;
+
+        return {
+          ...ride,
+          price: Number(adjustedPrice.toFixed(2)),
+          surge: prediction.details?.surge_multiplier > 1,
+          eta: prediction.details?.estimated_duration || ride.eta,
+        };
+      });
     },
     enabled: false,
   });
@@ -78,12 +111,38 @@ export const RideSearch = () => {
               onChange={setDropoff}
               onLocationSelect={setDropoffCoords}
             />
+
+            {prediction?.details?.surge_multiplier > 1 && (
+              <div className="flex items-center gap-2 p-2 bg-yellow-50 rounded-md">
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                <p className="text-sm text-yellow-700">
+                  Surge pricing in effect ({prediction.details.surge_multiplier}x)
+                </p>
+              </div>
+            )}
+
+            {/* Debug Info */}
+            {debug && (
+              <div className="p-2 bg-gray-50 rounded-md text-xs font-mono">
+                <p>From: {pickup}</p>
+                <p>To: {dropoff}</p>
+                <p>Distance: {debug.details?.estimated_distance.toFixed(2)} miles</p>
+                <p>Duration: {debug.details?.estimated_duration} mins</p>
+                <p>Base Fare: ${debug.details?.base_fare.toFixed(2)}</p>
+                <p>Distance Charge: ${debug.details?.distance_charge.toFixed(2)}</p>
+                <p>Time Charge: ${debug.details?.time_charge.toFixed(2)}</p>
+                <p>Service Fee: ${debug.details?.service_fee.toFixed(2)}</p>
+                <p>Surge: {debug.details?.surge_multiplier}x</p>
+                <p>Final Price: ${debug.predicted_price.toFixed(2)}</p>
+              </div>
+            )}
+
             <Button 
               onClick={handleSearch} 
               className="w-full"
-              disabled={isSearching}
+              disabled={isSearching || isPredicting}
             >
-              {isSearching ? (
+              {isSearching || isPredicting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 "Search Rides"
@@ -91,7 +150,7 @@ export const RideSearch = () => {
             </Button>
           </div>
 
-          {isLoading ? (
+          {(isLoadingRides || isPredicting) ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
             </div>

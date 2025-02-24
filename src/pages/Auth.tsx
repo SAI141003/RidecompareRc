@@ -8,6 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import WelcomeAnimation from "@/components/auth/WelcomeAnimation";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
+import { SocialAuth } from "@/components/auth/SocialAuth";
 
 const Auth = () => {
   const [showWelcome, setShowWelcome] = useState(true);
@@ -19,6 +20,7 @@ const Auth = () => {
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -38,27 +40,6 @@ const Auth = () => {
   if (showWelcome) {
     return <WelcomeAnimation />;
   }
-
-  const uploadAvatar = async (userId: string) => {
-    if (!avatar) return null;
-
-    const fileExt = avatar.name.split('.').pop();
-    const filePath = `${userId}/${crypto.randomUUID()}.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, avatar);
-
-    if (uploadError) {
-      throw uploadError;
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
-  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +88,20 @@ const Auth = () => {
         let avatarUrl = null;
         if (avatar) {
           try {
-            avatarUrl = await uploadAvatar(userId);
+            const fileExt = avatar.name.split('.').pop();
+            const filePath = `${userId}/${crypto.randomUUID()}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+              .from('avatars')
+              .upload(filePath, avatar);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+              .from('avatars')
+              .getPublicUrl(filePath);
+
+            avatarUrl = publicUrl;
           } catch (error: any) {
             toast.error("Failed to upload avatar");
             console.error("Avatar upload error:", error);
@@ -150,53 +144,61 @@ const Auth = () => {
       <Card className="w-full max-w-md relative bg-white/80 backdrop-blur-sm border-white/20 shadow-xl">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            {isSignUp ? "Create an account" : "Welcome back"}
+            {showEmailForm ? (isSignUp ? "Create an account" : "Welcome back") : "Sign in"}
           </CardTitle>
           <CardDescription>
-            {isSignUp
-              ? "Enter your details to create your account"
-              : "Enter your email and password to login"}
+            {showEmailForm
+              ? (isSignUp
+                ? "Enter your details to create your account"
+                : "Enter your email and password to login")
+              : "Choose your preferred sign in method"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isSignUp ? (
-            <SignUpForm
-              onSubmit={handleAuth}
-              loading={loading}
-              username={username}
-              setUsername={setUsername}
-              fullName={fullName}
-              setFullName={setFullName}
-              email={email}
-              setEmail={setEmail}
-              password={password}
-              setPassword={setPassword}
-              avatar={avatar}
-              setAvatar={setAvatar}
-              avatarPreview={avatarPreview}
-              setAvatarPreview={setAvatarPreview}
-            />
+          {showEmailForm ? (
+            <>
+              {isSignUp ? (
+                <SignUpForm
+                  onSubmit={handleAuth}
+                  loading={loading}
+                  username={username}
+                  setUsername={setUsername}
+                  fullName={fullName}
+                  setFullName={setFullName}
+                  email={email}
+                  setEmail={setEmail}
+                  password={password}
+                  setPassword={setPassword}
+                  avatar={avatar}
+                  setAvatar={setAvatar}
+                  avatarPreview={avatarPreview}
+                  setAvatarPreview={setAvatarPreview}
+                />
+              ) : (
+                <SignInForm
+                  onSubmit={handleAuth}
+                  loading={loading}
+                  email={email}
+                  setEmail={setEmail}
+                  password={password}
+                  setPassword={setPassword}
+                />
+              )}
+              <div className="mt-4 text-center text-sm">
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-purple-600 hover:text-purple-700 hover:underline transition-colors"
+                >
+                  {isSignUp
+                    ? "Already have an account? Sign in"
+                    : "Don't have an account? Sign up"}
+                </button>
+              </div>
+            </>
           ) : (
-            <SignInForm
-              onSubmit={handleAuth}
-              loading={loading}
-              email={email}
-              setEmail={setEmail}
-              password={password}
-              setPassword={setPassword}
-            />
+            <SocialAuth onEmailClick={() => setShowEmailForm(true)} />
           )}
-          <div className="mt-4 text-center text-sm">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-purple-600 hover:text-purple-700 hover:underline transition-colors"
-            >
-              {isSignUp
-                ? "Already have an account? Sign in"
-                : "Don't have an account? Sign up"}
-            </button>
-          </div>
         </CardContent>
       </Card>
     </div>

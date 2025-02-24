@@ -1,8 +1,8 @@
 
+import { RideOption } from "@/types/ride";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Car, CarTaxiFront, TrendingUp } from "lucide-react";
-import type { RideOption } from "@/types/ride";
+import { Car, Clock, Users } from "lucide-react";
 
 interface RideCardProps {
   ride: RideOption;
@@ -10,40 +10,49 @@ interface RideCardProps {
 }
 
 export const RideCard = ({ ride, onBook }: RideCardProps) => {
+  const isPromo = ride.name.includes('(Promo)');
+
   return (
-    <Card className="bg-white/90">
-      <CardContent className="flex items-center justify-between p-4">
+    <Card className="p-4 hover:shadow-lg transition-shadow">
+      <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          {ride.provider === "uber" ? (
-            <Car className="h-8 w-8 text-black" />
-          ) : (
-            <CarTaxiFront className="h-8 w-8 text-pink-600" />
-          )}
+          <div className={`p-2 rounded-full ${ride.provider === 'uber' ? 'bg-black' : 'bg-pink-600'}`}>
+            <Car className="h-6 w-6 text-white" />
+          </div>
           <div>
-            <h3 className="font-semibold">{ride.type}</h3>
-            <div className="text-sm text-gray-500 space-x-2">
-              <span>{ride.capacity} seats</span>
-              <span>•</span>
-              <span>{ride.eta} mins</span>
+            <h3 className="font-semibold flex items-center gap-2">
+              {ride.name}
+              {isPromo && (
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                  Connected Account
+                </span>
+              )}
+            </h3>
+            <div className="flex items-center text-sm text-gray-500 space-x-4">
+              <span className="flex items-center">
+                <Clock className="h-4 w-4 mr-1" />
+                {ride.time} min
+              </span>
+              <span className="flex items-center">
+                <Users className="h-4 w-4 mr-1" />
+                {ride.capacity}
+              </span>
             </div>
           </div>
         </div>
         <div className="text-right">
-          <div className="flex items-center space-x-2">
-            <span className="font-bold">${ride.price.toFixed(2)}</span>
-            {ride.surge && (
-              <TrendingUp className="h-4 w-4 text-red-500" />
-            )}
+          <div className="text-lg font-semibold">
+            ${ride.price.toFixed(2)}
           </div>
           <Button
+            size="sm"
             onClick={() => onBook(ride)}
-            variant="outline"
             className="mt-2"
           >
             Book Now
           </Button>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 };

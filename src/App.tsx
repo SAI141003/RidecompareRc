@@ -18,6 +18,7 @@ import Services from "./pages/Services";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
 import SearchResults from "./pages/SearchResults";
+import RasaConfig from "./pages/profile/RasaConfig";
 import "./App.css";
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
             <Route path="/profile/messages" element={<Messages />} />
             <Route path="/profile/premium" element={<RideCompare />} />
             <Route path="/profile/promotions" element={<Promotions />} />
+            <Route path="/profile/rasa-config" element={<RasaConfig />} />
             <Route path="/activity" element={<Activity />} />
             <Route path="/services" element={<Services />} />
             <Route path="/search-results" element={<SearchResults />} />
