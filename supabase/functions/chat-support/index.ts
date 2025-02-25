@@ -19,10 +19,16 @@ serve(async (req) => {
       throw new Error('No message provided')
     }
 
-    console.log('Sending message to Rasa:', message)
+    // Get the RASA URL from environment variable
+    const RASA_URL = Deno.env.get('RASA_URL')
+    if (!RASA_URL) {
+      throw new Error('RASA_URL environment variable is not set')
+    }
 
-    // Make request to your local Rasa server (through ngrok)
-    const response = await fetch('http://localhost:5005/webhooks/rest/webhook', {
+    console.log('Sending message to Rasa:', message)
+    console.log('Using Rasa URL:', RASA_URL)
+
+    const response = await fetch(`${RASA_URL}/webhooks/rest/webhook`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
