@@ -25,40 +25,54 @@ serve(async (req) => {
       throw new Error('RASA_URL environment variable is not set')
     }
 
-    console.log('Sending message to Rasa:', message)
-    console.log('Using Rasa URL:', RASA_URL)
-
-    const response = await fetch(`${RASA_URL}/webhooks/rest/webhook`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        sender: "user",
-        message: message
-      })
-    })
-
-    if (!response.ok) {
-      console.error('Rasa server error:', await response.text())
-      throw new Error(`Rasa server error: ${response.statusText}`)
-    }
-
-    const rasaResponses = await response.json()
-    console.log('Rasa response:', rasaResponses)
+    // Remove trailing slash if present
+    const baseUrl = RASA_URL.endsWith('/') ? RASA_URL.slice(0, -1) : RASA_URL
+    const webhookUrl = `${baseUrl}/webhooks/rest/webhook`
     
-    // Extract the text from the first response
-    const botResponse = rasaResponses[0]?.text || "I'm sorry, I couldn't process that request."
+    console.log('Sending message to Rasa:', message)
+    console.log('Using Rasa webhook URL:', webhookUrl)
 
-    return new Response(
-      JSON.stringify({
-        response: botResponse
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      },
-    )
+    try {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: "user",
+          message: message
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Rasa server error:', errorText)
+        throw new Error(`Rasa server error: ${response.status} ${response.statusText}`)
+      }
+
+      const rasaResponses = await response.json()
+      console.log('Rasa response:', rasaResponses)
+      
+      if (!Array.isArray(rasaResponses) || rasaResponses.length === 0) {
+        throw new Error('Invalid response format from Rasa server')
+      }
+
+      // Extract the text from the first response
+      const botResponse = rasaResponses[0]?.text || "I'm sorry, I couldn't process that request."
+
+      return new Response(
+        JSON.stringify({
+          response: botResponse
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        },
+      )
+    } catch (fetchError) {
+      console.error('Fetch error:', fetchError)
+      throw new Error(`Failed to communicate with Rasa server: ${fetchError.message}`)
+    }
 
   } catch (error) {
     console.error('Error:', error.message)
