@@ -19,8 +19,10 @@ serve(async (req) => {
       throw new Error('No message provided')
     }
 
-    // Make request to your Rasa server
-    const response = await fetch('https://38d7-81-28-156-126.ngrok-free.app/webhooks/rest/webhook', {
+    console.log('Sending message to Rasa:', message)
+
+    // Make request to your local Rasa server (through ngrok)
+    const response = await fetch('http://localhost:5005/webhooks/rest/webhook', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -39,6 +41,7 @@ serve(async (req) => {
     const rasaResponses = await response.json()
     console.log('Rasa response:', rasaResponses)
     
+    // Extract the text from the first response
     const botResponse = rasaResponses[0]?.text || "I'm sorry, I couldn't process that request."
 
     return new Response(
