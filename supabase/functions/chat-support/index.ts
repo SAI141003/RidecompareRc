@@ -19,17 +19,11 @@ serve(async (req) => {
       throw new Error('No message provided')
     }
 
-    const RASA_API_KEY = Deno.env.get('RASA_API_KEY')
-    if (!RASA_API_KEY) {
-      throw new Error('RASA API key not configured')
-    }
-
     // Make request to your Rasa server
     const response = await fetch('https://38d7-81-28-156-126.ngrok-free.app/webhooks/rest/webhook', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RASA_API_KEY}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         sender: "user",
