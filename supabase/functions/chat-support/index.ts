@@ -1,16 +1,15 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { corsHeaders } from '../_shared/cors.ts'
 
-interface RasaResponse {
-  recipient_id: string;
-  text: string;
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -25,8 +24,8 @@ serve(async (req) => {
       throw new Error('RASA API key not configured')
     }
 
-    // Make request to your Rasa server - replace with your actual Rasa server URL
-    const response = await fetch('https://your-rasa-server-url/webhooks/rest/webhook', {
+    // Make request to your Rasa server
+    const response = await fetch('https://38d7-81-28-156-126.ngrok-free.app/webhooks/rest/webhook', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -39,14 +38,13 @@ serve(async (req) => {
     })
 
     if (!response.ok) {
-      console.error('Rasa server error:', await response.text());
+      console.error('Rasa server error:', await response.text())
       throw new Error(`Rasa server error: ${response.statusText}`)
     }
 
-    const rasaResponses: RasaResponse[] = await response.json()
-    console.log('Rasa response:', rasaResponses);
+    const rasaResponses = await response.json()
+    console.log('Rasa response:', rasaResponses)
     
-    // Get the first response text or fallback to a default message
     const botResponse = rasaResponses[0]?.text || "I'm sorry, I couldn't process that request."
 
     return new Response(
