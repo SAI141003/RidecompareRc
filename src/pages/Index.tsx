@@ -1,9 +1,8 @@
-
 import { RideSearch } from "@/components/RideSearch";
 import { HotelSearch } from "@/components/hotel/HotelSearch";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Car, Link, LinkOff, Sparkles } from "lucide-react";
+import { ArrowRight, Car, Link, Link2Off, Sparkles } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { useEffect, useState } from "react";
@@ -17,7 +16,6 @@ const Index = () => {
   const [currentFeature, setCurrentFeature] = useState(0);
   const [activeTab, setActiveTab] = useState<'rides' | 'hotels'>('rides');
 
-  // Fetch connected providers
   const { data: connectedProviders, refetch: refetchProviders } = useQuery({
     queryKey: ['connected-providers'],
     queryFn: getConnectedProviders,
@@ -70,7 +68,6 @@ const Index = () => {
             Your journey begins here. Find and book rides and hotels with ease.
           </p>
 
-          {/* Provider Connection Cards */}
           {activeTab === 'rides' && (
             <div className="w-full max-w-md grid gap-4 mb-4">
               <Card>
@@ -95,7 +92,7 @@ const Index = () => {
                     >
                       {isConnected('uber') ? (
                         <>
-                          <LinkOff className="mr-2 h-4 w-4" />
+                          <Link2Off className="mr-2 h-4 w-4" />
                           Disconnect
                         </>
                       ) : (
@@ -120,7 +117,7 @@ const Index = () => {
                     >
                       {isConnected('lyft') ? (
                         <>
-                          <LinkOff className="mr-2 h-4 w-4" />
+                          <Link2Off className="mr-2 h-4 w-4" />
                           Disconnect
                         </>
                       ) : (
