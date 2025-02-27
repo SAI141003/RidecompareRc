@@ -1,10 +1,19 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const WelcomeAnimation = () => {
+  // Array of pet characters to randomly choose from
+  const petCharacters = ['🐱', '🐶', '🐕', '🐈', '🐩', '🐱‍👤'];
+  const [selectedPet, setSelectedPet] = useState('');
+
   useEffect(() => {
-    // Add a class to the body to prevent scrolling during animation
+    // Prevent scrolling during animation
     document.body.style.overflow = 'hidden';
+    
+    // Randomly select a pet character when component mounts
+    const randomIndex = Math.floor(Math.random() * petCharacters.length);
+    setSelectedPet(petCharacters[randomIndex]);
+
     return () => {
       document.body.style.overflow = 'auto';
     };
@@ -13,15 +22,15 @@ const WelcomeAnimation = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50 overflow-hidden">
       <div className="text-center space-y-6 animate-fade-up">
-        {/* Anime Character Container */}
+        {/* Pet Character Container */}
         <div className="relative w-48 h-48 mx-auto">
           {/* Circle background with gradient */}
           <div className="absolute inset-0 bg-gradient-to-r from-purple-200 to-blue-200 rounded-full animate-pulse" />
           
-          {/* Anime character representation using emoji and styling */}
+          {/* Pet character display */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-6xl animate-bounce" role="img" aria-label="anime character">
-              👩‍🦰
+            <span className="text-7xl animate-bounce" role="img" aria-label="pet character">
+              {selectedPet}
             </span>
           </div>
         </div>
@@ -37,7 +46,7 @@ const WelcomeAnimation = () => {
             RideCompare
           </h1>
           <p className="text-2xl text-purple-600 font-semibold animate-fade-in opacity-0 animation-delay-300">
-            ようこそ! Welcome Back!
+            Welcome Back!
           </p>
         </div>
 
