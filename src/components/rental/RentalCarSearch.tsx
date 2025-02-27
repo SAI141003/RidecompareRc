@@ -49,7 +49,7 @@ export const RentalCarSearch = () => {
   const [returnDate, setReturnDate] = useState<Date>(addDays(today, 3));
   
   // Filter state
-  const [carCategory, setCarCategory] = useState<string>("");
+  const [carCategory, setCarCategory] = useState<string>("midsize");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   
@@ -172,11 +172,6 @@ export const RentalCarSearch = () => {
     }
   };
   
-  // Toggle filters visibility
-  const toggleFilters = () => {
-    setShowFilters(prev => !prev);
-  };
-  
   // Format date for display
   const formatDate = (date: Date) => {
     return format(date, "EEE, MMM d");
@@ -291,7 +286,7 @@ export const RentalCarSearch = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={toggleFilters}
+                onClick={() => setShowFilters(!showFilters)}
                 className="w-full flex items-center justify-center"
               >
                 <Filter className="h-4 w-4 mr-2" />
@@ -308,10 +303,9 @@ export const RentalCarSearch = () => {
                         <SelectValue placeholder="Any vehicle type" />
                       </SelectTrigger>
                       <SelectContent className="bg-white">
-                        <SelectItem value="">Any vehicle type</SelectItem>
+                        <SelectItem value="midsize">Midsize</SelectItem>
                         <SelectItem value="economy">Economy</SelectItem>
                         <SelectItem value="compact">Compact</SelectItem>
-                        <SelectItem value="midsize">Midsize</SelectItem>
                         <SelectItem value="suv">SUV</SelectItem>
                         <SelectItem value="luxury">Luxury</SelectItem>
                         <SelectItem value="minivan">Minivan</SelectItem>
