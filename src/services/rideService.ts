@@ -1,6 +1,8 @@
-
 import type { RideOption } from "@/types/ride";
 import { supabase } from "@/integrations/supabase/client";
+
+const UBER_CLIENT_ID = import.meta.env.VITE_UBER_CLIENT_ID;
+const LYFT_CLIENT_ID = import.meta.env.VITE_LYFT_CLIENT_ID;
 
 export const fetchRideOptions = async (pickup: string, dropoff: string): Promise<RideOption[]> => {
   // First check if user has any connected providers
@@ -9,10 +11,7 @@ export const fetchRideOptions = async (pickup: string, dropoff: string): Promise
     .select('provider_type, access_token')
     .order('provider_type');
 
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
-  // Base prices that will be adjusted based on connected accounts
+  // Base options array remains the same
   const baseOptions: RideOption[] = [
     {
       id: "uber-x",
@@ -68,22 +67,45 @@ export const fetchRideOptions = async (pickup: string, dropoff: string): Promise
     },
   ];
 
-  // Apply promotional prices for connected accounts
-  return baseOptions.map(option => {
-    const connectedProvider = providers?.find(p => p.provider_type === option.provider);
-    if (connectedProvider) {
-      // Apply a promotional discount (in a real app, this would come from the provider's API)
-      return {
-        ...option,
-        price: option.price * 0.85, // 15% discount for connected accounts
-        name: `${option.name} (Promo)`,
-      };
-    }
-    return option;
-  });
+  // If we have connected providers, fetch real prices
+  if (providers && providers.length > 0) {
+    const pricePromises = providers.map(async (provider) => {
+      try {
+        if (provider.provider_type === 'uber') {
+          return await fetchUberPrices(provider.access_token, pickup, dropoff);
+        } else if (provider.provider_type === 'lyft') {
+          return await fetchLyftPrices(provider.access_token, pickup, dropoff);
+        }
+      } catch (error) {
+        console.error(`Error fetching ${provider.provider_type} prices:`, error);
+        return null;
+      }
+    });
+
+    const realPrices = await Promise.all(pricePromises);
+
+    // Update base options with real prices where available
+    return baseOptions.map(option => {
+      const realPrice = realPrices.find(prices => 
+        prices?.provider === option.provider && prices?.type === option.type
+      );
+
+      if (realPrice) {
+        return {
+          ...option,
+          price: realPrice.price,
+          eta: realPrice.eta,
+          surge: realPrice.surge,
+        };
+      }
+      return option;
+    });
+  }
+
+  return baseOptions;
 };
 
-// Function to connect a ride provider account
+// Function to initiate OAuth flow for ride providers
 export const connectProvider = async (provider: 'uber' | 'lyft') => {
   // Get the current user's ID
   const { data: { user } } = await supabase.auth.getUser();
@@ -92,21 +114,59 @@ export const connectProvider = async (provider: 'uber' | 'lyft') => {
     throw new Error('User must be logged in to connect a provider');
   }
 
-  // In a real implementation, this would redirect to the provider's OAuth flow
-  const mockToken = {
-    access_token: `mock_${provider}_token_${Date.now()}`,
-    refresh_token: `mock_${provider}_refresh_${Date.now()}`,
-    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Convert Date to ISO string
+  // Configure OAuth settings based on provider
+  const config = {
+    uber: {
+      clientId: UBER_CLIENT_ID,
+      scope: 'profile rides.read',
+      redirectUri: `${window.location.origin}/auth/callback/uber`,
+    },
+    lyft: {
+      clientId: LYFT_CLIENT_ID,
+      scope: 'public rides.read',
+      redirectUri: `${window.location.origin}/auth/callback/lyft`,
+    }
   };
 
-  const { data, error } = await supabase
+  // Store the user ID in session storage for the callback
+  sessionStorage.setItem('connecting_provider', provider);
+
+  // Build the OAuth URL
+  const providerConfig = config[provider];
+  const oauthUrl = provider === 'uber'
+    ? `https://login.uber.com/oauth/v2/authorize?client_id=${providerConfig.clientId}&response_type=code&scope=${providerConfig.scope}&redirect_uri=${providerConfig.redirectUri}`
+    : `https://api.lyft.com/oauth/authorize?client_id=${providerConfig.clientId}&response_type=code&scope=${providerConfig.scope}&redirect_uri=${providerConfig.redirectUri}`;
+
+  // Redirect to the OAuth login page
+  window.location.href = oauthUrl;
+};
+
+// Function to handle OAuth callback
+export const handleOAuthCallback = async (provider: 'uber' | 'lyft', code: string) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('User must be logged in to complete provider connection');
+  }
+
+  // Exchange the authorization code for tokens using our edge function
+  const response = await supabase.functions.invoke(`exchange-${provider}-token`, {
+    body: { code, redirect_uri: `${window.location.origin}/auth/callback/${provider}` }
+  });
+
+  if (!response.data) {
+    throw new Error(`Failed to exchange ${provider} authorization code`);
+  }
+
+  // Store the tokens in our database
+  const { error } = await supabase
     .from('service_providers')
     .upsert({
       user_id: user.id,
       provider_type: provider,
-      access_token: mockToken.access_token,
-      refresh_token: mockToken.refresh_token,
-      expires_at: mockToken.expires_at,
+      access_token: response.data.access_token,
+      refresh_token: response.data.refresh_token,
+      expires_at: new Date(Date.now() + response.data.expires_in * 1000).toISOString(),
     }, {
       onConflict: 'user_id,provider_type'
     });
@@ -115,8 +175,34 @@ export const connectProvider = async (provider: 'uber' | 'lyft') => {
     throw error;
   }
 
-  return data;
+  return response.data;
 };
+
+// Helper function to fetch Uber prices
+async function fetchUberPrices(accessToken: string, pickup: string, dropoff: string) {
+  try {
+    const response = await supabase.functions.invoke('fetch-uber-prices', {
+      body: { accessToken, pickup, dropoff }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching Uber prices:', error);
+    return null;
+  }
+}
+
+// Helper function to fetch Lyft prices
+async function fetchLyftPrices(accessToken: string, pickup: string, dropoff: string) {
+  try {
+    const response = await supabase.functions.invoke('fetch-lyft-prices', {
+      body: { accessToken, pickup, dropoff }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching Lyft prices:', error);
+    return null;
+  }
+}
 
 // Function to disconnect a ride provider account
 export const disconnectProvider = async (provider: 'uber' | 'lyft') => {
@@ -159,4 +245,3 @@ export const getConnectedProviders = async () => {
 
   return data;
 };
-
