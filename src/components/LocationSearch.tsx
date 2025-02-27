@@ -35,14 +35,9 @@ export const LocationSearch = ({
     }
 
     try {
+      // Using Photon, which is based on OpenStreetMap data but with better CORS support
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`,
-        {
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'RideShareApp/1.0' // Required by Nominatim's usage policy
-          }
-        }
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`
       );
       
       if (!response.ok) {
@@ -50,7 +45,18 @@ export const LocationSearch = ({
       }
       
       const data = await response.json();
-      setSuggestions(data);
+      
+      // Transform Photon response to match our Location interface
+      const transformedData = data.features.map((feature: any) => ({
+        display_name: feature.properties.name 
+          + (feature.properties.city ? `, ${feature.properties.city}` : '')
+          + (feature.properties.state ? `, ${feature.properties.state}` : '')
+          + (feature.properties.country ? `, ${feature.properties.country}` : ''),
+        lat: feature.geometry.coordinates[1].toString(),
+        lon: feature.geometry.coordinates[0].toString()
+      }));
+      
+      setSuggestions(transformedData);
     } catch (error) {
       console.error('Location search error:', error);
       toast.error('Error searching for locations');
@@ -79,6 +85,10 @@ export const LocationSearch = ({
           }}
           className={`pl-12 ${className}`}
           onFocus={() => setShowSuggestions(true)}
+          onBlur={() => {
+            // Delay hiding suggestions to allow click events to fire
+            setTimeout(() => setShowSuggestions(false), 200);
+          }}
         />
       </div>
 
