@@ -15,7 +15,7 @@ interface LocationSearchProps {
   value: string;
   onChange: (value: string) => void;
   onLocationSelect: (location: [number, number]) => void;
-  className?: string; // Added className prop
+  className?: string;
 }
 
 export const LocationSearch = ({
@@ -36,8 +36,19 @@ export const LocationSearch = ({
 
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'RideShareApp/1.0' // Required by Nominatim's usage policy
+          }
+        }
       );
+      
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      
       const data = await response.json();
       setSuggestions(data);
     } catch (error) {
