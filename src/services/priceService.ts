@@ -1,4 +1,3 @@
-
 // Helper function to generate slightly random prices
 export function generateRandomPrice(basePrice: number): number {
   const variation = basePrice * 0.2; // 20% variation
@@ -64,10 +63,15 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   };
 }
 
-// Estimate travel time based on distance and average speed
+// Updated travel time estimation based on real-world conditions
 function estimateTravelTime(distanceKm: number): number {
-  const averageSpeedKph = 48; // Assumed average speed in city (30mph ≈ 48kph)
-  return Math.round((distanceKm / averageSpeedKph) * 60); // Convert to minutes
+  // Average urban speed of 30km/h with traffic
+  const averageSpeedKph = 30;
+  // Add 5 minutes base time for traffic lights and intersections
+  const baseTime = 5;
+  // Calculate time in minutes
+  const travelTime = Math.ceil((distanceKm / averageSpeedKph) * 60) + baseTime;
+  return travelTime;
 }
 
 export async function getPricePrediction(pickup: string, dropoff: string): Promise<PricePrediction> {

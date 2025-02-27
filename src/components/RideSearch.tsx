@@ -84,37 +84,53 @@ export const RideSearch = () => {
         async (position) => {
           const { latitude, longitude } = position.coords;
           try {
+            // Use more detailed reverse geocoding query
             const response = await fetch(
-              `https://photon.komoot.io/reverse?lon=${longitude}&lat=${latitude}`
+              `https://photon.komoot.io/reverse?lon=${longitude}&lat=${latitude}&limit=1`
             );
             const data = await response.json();
             if (data.features && data.features[0]) {
               const feature = data.features[0].properties;
-              const address = [
-                feature.name,
-                feature.city,
-                feature.state,
-                feature.country
-              ].filter(Boolean).join(", ");
+              // Build a more detailed address string
+              const addressParts = [];
+              
+              if (feature.housenumber) addressParts.push(feature.housenumber);
+              if (feature.street) addressParts.push(feature.street);
+              if (feature.name && !feature.street) addressParts.push(feature.name);
+              if (feature.district) addressParts.push(feature.district);
+              if (feature.city) addressParts.push(feature.city);
+              if (feature.state) addressParts.push(feature.state);
+              if (feature.country) addressParts.push(feature.country);
+              
+              const address = addressParts.filter(Boolean).join(", ");
               
               setPickup(address);
               setPickupCoords([latitude, longitude]);
               toast.success("Current location detected");
+            } else {
+              throw new Error('Location details not found');
             }
           } catch (error) {
             console.error("Error getting address:", error);
-            toast.error("Error getting current location address");
+            toast.error("Could not get your exact address, please enter manually");
+            // Still set the coordinates even if we can't get the address
+            setPickupCoords([latitude, longitude]);
           }
           setIsLoadingCurrentLocation(false);
         },
         (error) => {
           console.error("Error getting location:", error);
-          toast.error("Error getting current location");
+          toast.error("Could not access your location. Please check your browser settings.");
           setIsLoadingCurrentLocation(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
       );
     } else {
-      toast.error("Geolocation is not supported by your browser");
+      toast.error("Location services are not supported by your browser");
       setIsLoadingCurrentLocation(false);
     }
   };
