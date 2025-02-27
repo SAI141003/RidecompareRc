@@ -1,44 +1,14 @@
 
-import { supabase } from "@/integrations/supabase/client";
+// Helper function to generate slightly random prices
+export function generateRandomPrice(basePrice: number): number {
+  const variation = basePrice * 0.2; // 20% variation
+  const randomChange = (Math.random() - 0.5) * variation;
+  return Number((basePrice + randomChange).toFixed(2));
+}
 
-export const getPricePrediction = async (
-  location_from: string,
-  location_to: string,
-  day_of_week?: number,
-  hour_of_day?: number
-) => {
-  console.log('Fetching price prediction for:', { location_from, location_to });
-  
-  const { data, error } = await supabase.functions.invoke('predict-ride-price', {
-    body: {
-      location_from,
-      location_to,
-      day_of_week,
-      hour_of_day,
-    },
-  });
-
-  if (error) {
-    console.error('Price prediction error:', error);
-    throw error;
-  }
-
-  console.log('Price prediction response:', data);
-  return data;
-};
-
-export const checkFraudRisk = async (
-  action_type: string,
-  details: Record<string, unknown>
-) => {
-  const { data, error } = await supabase.functions.invoke('detect-fraud', {
-    body: {
-      user_id: (await supabase.auth.getUser()).data.user?.id,
-      action_type,
-      details,
-    },
-  });
-
-  if (error) throw error;
-  return data;
-};
+// Helper function to generate slightly random ETAs
+export function generateRandomEta(baseEta: number): number {
+  const variation = 2; // +/- 2 minutes
+  const randomChange = Math.floor((Math.random() - 0.5) * variation * 2);
+  return baseEta + randomChange;
+}
