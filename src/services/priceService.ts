@@ -16,7 +16,10 @@ export function generateRandomEta(baseEta: number): number {
 interface PricePrediction {
   predicted_price: number;
   details?: {
-    estimated_distance: number;
+    estimated_distance: {
+      miles: number;
+      kilometers: number;
+    };
     estimated_duration: number;
     base_fare: number;
     distance_charge: number;
@@ -42,8 +45,8 @@ async function getCoordinates(location: string): Promise<[number, number]> {
   }
 }
 
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 3959; // Earth's radius in miles
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): { miles: number; kilometers: number } {
+  const R = 6371; // Earth's radius in kilometers
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = 
@@ -51,13 +54,19 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
+  const distanceKm = R * c;
+  const distanceMiles = distanceKm * 0.621371; // Convert km to miles
+  
+  return {
+    kilometers: Number(distanceKm.toFixed(2)),
+    miles: Number(distanceMiles.toFixed(2))
+  };
 }
 
 // Estimate travel time based on distance and average speed
-function estimateTravelTime(distance: number): number {
-  const averageSpeedMph = 30; // Assumed average speed in city
-  return Math.round((distance / averageSpeedMph) * 60); // Convert to minutes
+function estimateTravelTime(distanceKm: number): number {
+  const averageSpeedKph = 48; // Assumed average speed in city (30mph ≈ 48kph)
+  return Math.round((distanceKm / averageSpeedKph) * 60); // Convert to minutes
 }
 
 export async function getPricePrediction(pickup: string, dropoff: string): Promise<PricePrediction> {
@@ -75,7 +84,7 @@ export async function getPricePrediction(pickup: string, dropoff: string): Promi
     );
 
     // Calculate estimated duration based on distance
-    const duration = estimateTravelTime(distance);
+    const duration = estimateTravelTime(distance.kilometers);
     
     const baseFare = 2.50;
     const distanceRate = 1.50; // per mile
@@ -83,14 +92,17 @@ export async function getPricePrediction(pickup: string, dropoff: string): Promi
     const serviceFee = 2.00;
     const surgeMultiplier = Math.random() > 0.7 ? 1 + Math.random() : 1; // 30% chance of surge
 
-    const distanceCharge = distance * distanceRate;
+    const distanceCharge = distance.miles * distanceRate;
     const timeCharge = duration * timeRate;
     const subtotal = (baseFare + distanceCharge + timeCharge + serviceFee) * surgeMultiplier;
 
     return {
       predicted_price: Number(subtotal.toFixed(2)),
       details: {
-        estimated_distance: Number(distance.toFixed(2)),
+        estimated_distance: {
+          miles: distance.miles,
+          kilometers: distance.kilometers
+        },
         estimated_duration: duration,
         base_fare: baseFare,
         distance_charge: Number(distanceCharge.toFixed(2)),
