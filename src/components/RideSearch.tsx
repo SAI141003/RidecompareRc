@@ -1,8 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import type { RideOption } from "@/types/ride";
 import { getPricePrediction } from "@/services/priceService";
@@ -18,34 +18,34 @@ export const RideSearch = () => {
   const [pickupCoords, setPickupCoords] = useState<[number, number]>();
   const [dropoffCoords, setDropoffCoords] = useState<[number, number]>();
   const [isSearching, setIsSearching] = useState(false);
-  const [debug, setDebug] = useState<any>(null);
+  const [isLoadingCurrentLocation, setIsLoadingCurrentLocation] = useState(false);
 
   const { data: prediction, isLoading: isPredicting } = useQuery({
     queryKey: ["price-prediction", pickup, dropoff],
     queryFn: async () => {
+      if (!pickup || !dropoff) return null;
       console.log('Fetching prediction for:', pickup, dropoff);
       const result = await getPricePrediction(pickup, dropoff);
       console.log('Prediction result:', result);
-      setDebug(result);
       return result;
     },
     enabled: !!(pickup && dropoff),
   });
 
-  const { data: rides, isLoading: isLoadingRides, refetch } = useQuery({
-    queryKey: ["rides", pickup, dropoff, prediction],
+  const { data: rides = [], isLoading: isLoadingRides, refetch: refetchRides } = useQuery({
+    queryKey: ["rides", pickup, dropoff],
     queryFn: async () => {
-      const baseRideOptions = await fetchRideOptions(pickup, dropoff);
-      
       if (!prediction?.predicted_price) {
-        return baseRideOptions;
+        return [];
       }
 
+      const baseRideOptions = await fetchRideOptions(pickup, dropoff);
+      
       // Calculate price multipliers based on vehicle type
       const typeMultipliers = {
         "UberX": 1,
         "UberXL": 1.5,
-        "Lyft": 0.95, // Slight discount for Lyft
+        "Lyft": 0.95,
         "Lyft XL": 1.45,
       };
 
@@ -65,13 +65,56 @@ export const RideSearch = () => {
     enabled: false,
   });
 
+  const getCurrentLocation = () => {
+    setIsLoadingCurrentLocation(true);
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            // Reverse geocode the coordinates to get the address
+            const response = await fetch(
+              `https://photon.komoot.io/reverse?lon=${longitude}&lat=${latitude}`
+            );
+            const data = await response.json();
+            if (data.features && data.features[0]) {
+              const feature = data.features[0].properties;
+              const address = [
+                feature.name,
+                feature.city,
+                feature.state,
+                feature.country
+              ].filter(Boolean).join(", ");
+              
+              setPickup(address);
+              setPickupCoords([latitude, longitude]);
+              toast.success("Current location detected");
+            }
+          } catch (error) {
+            console.error("Error getting address:", error);
+            toast.error("Error getting current location address");
+          }
+          setIsLoadingCurrentLocation(false);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          toast.error("Error getting current location");
+          setIsLoadingCurrentLocation(false);
+        }
+      );
+    } else {
+      toast.error("Geolocation is not supported by your browser");
+      setIsLoadingCurrentLocation(false);
+    }
+  };
+
   const handleSearch = async () => {
     if (!pickup || !dropoff) {
       toast.error("Please enter both pickup and dropoff locations");
       return;
     }
     setIsSearching(true);
-    await refetch();
+    await refetchRides();
     setIsSearching(false);
   };
 
@@ -99,12 +142,28 @@ export const RideSearch = () => {
           <Map pickup={pickupCoords} dropoff={dropoffCoords} />
           
           <div className="space-y-4">
-            <LocationSearch
-              placeholder="Enter pickup location"
-              value={pickup}
-              onChange={setPickup}
-              onLocationSelect={setPickupCoords}
-            />
+            <div className="relative">
+              <LocationSearch
+                placeholder="Enter pickup location"
+                value={pickup}
+                onChange={setPickup}
+                onLocationSelect={setPickupCoords}
+              />
+              <Button
+                size="icon"
+                variant="ghost"
+                className="absolute right-2 top-1/2 -translate-y-1/2"
+                onClick={getCurrentLocation}
+                disabled={isLoadingCurrentLocation}
+              >
+                {isLoadingCurrentLocation ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MapPin className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
             <LocationSearch
               placeholder="Enter dropoff location"
               value={dropoff}
@@ -118,22 +177,6 @@ export const RideSearch = () => {
                 <p className="text-sm text-yellow-700">
                   Surge pricing in effect ({prediction.details.surge_multiplier}x)
                 </p>
-              </div>
-            )}
-
-            {/* Debug Info */}
-            {debug && (
-              <div className="p-2 bg-gray-50 rounded-md text-xs font-mono">
-                <p>From: {pickup}</p>
-                <p>To: {dropoff}</p>
-                <p>Distance: {debug.details?.estimated_distance.toFixed(2)} miles</p>
-                <p>Duration: {debug.details?.estimated_duration} mins</p>
-                <p>Base Fare: ${debug.details?.base_fare.toFixed(2)}</p>
-                <p>Distance Charge: ${debug.details?.distance_charge.toFixed(2)}</p>
-                <p>Time Charge: ${debug.details?.time_charge.toFixed(2)}</p>
-                <p>Service Fee: ${debug.details?.service_fee.toFixed(2)}</p>
-                <p>Surge: {debug.details?.surge_multiplier}x</p>
-                <p>Final Price: ${debug.predicted_price.toFixed(2)}</p>
               </div>
             )}
 
@@ -154,7 +197,7 @@ export const RideSearch = () => {
             <div className="flex justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
             </div>
-          ) : rides ? (
+          ) : rides && rides.length > 0 ? (
             <div className="space-y-4 mt-6">
               {rides.map((ride) => (
                 <RideCard
