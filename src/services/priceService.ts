@@ -26,35 +26,81 @@ interface PricePrediction {
   };
 }
 
-export async function getPricePrediction(pickup: string, dropoff: string): Promise<PricePrediction> {
-  // In demo mode, generate a realistic-looking price prediction
-  const baseDistance = 5; // miles
-  const baseDuration = 15; // minutes
-  const variation = 0.3; // 30% random variation
-
-  const distance = baseDistance * (1 + (Math.random() - 0.5) * variation);
-  const duration = Math.round(baseDuration * (1 + (Math.random() - 0.5) * variation));
-  
-  const baseFare = 2.50;
-  const distanceRate = 1.50; // per mile
-  const timeRate = 0.30; // per minute
-  const serviceFee = 2.00;
-  const surgeMultiplier = Math.random() > 0.7 ? 1 + Math.random() : 1; // 30% chance of surge
-
-  const distanceCharge = distance * distanceRate;
-  const timeCharge = duration * timeRate;
-  const subtotal = (baseFare + distanceCharge + timeCharge + serviceFee) * surgeMultiplier;
-
-  return {
-    predicted_price: Number(subtotal.toFixed(2)),
-    details: {
-      estimated_distance: Number(distance.toFixed(2)),
-      estimated_duration: duration,
-      base_fare: baseFare,
-      distance_charge: Number(distanceCharge.toFixed(2)),
-      time_charge: Number(timeCharge.toFixed(2)),
-      service_fee: serviceFee,
-      surge_multiplier: Number(surgeMultiplier.toFixed(2))
+async function getCoordinates(location: string): Promise<[number, number]> {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`
+    );
+    const data = await response.json();
+    if (data && data[0]) {
+      return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
     }
-  };
+    throw new Error('Location not found');
+  } catch (error) {
+    console.error('Error getting coordinates:', error);
+    throw error;
+  }
+}
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3959; // Earth's radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+// Estimate travel time based on distance and average speed
+function estimateTravelTime(distance: number): number {
+  const averageSpeedMph = 30; // Assumed average speed in city
+  return Math.round((distance / averageSpeedMph) * 60); // Convert to minutes
+}
+
+export async function getPricePrediction(pickup: string, dropoff: string): Promise<PricePrediction> {
+  try {
+    // Get coordinates for pickup and dropoff locations
+    const [pickupCoords, dropoffCoords] = await Promise.all([
+      getCoordinates(pickup),
+      getCoordinates(dropoff)
+    ]);
+
+    // Calculate actual distance
+    const distance = calculateDistance(
+      pickupCoords[0], pickupCoords[1],
+      dropoffCoords[0], dropoffCoords[1]
+    );
+
+    // Calculate estimated duration based on distance
+    const duration = estimateTravelTime(distance);
+    
+    const baseFare = 2.50;
+    const distanceRate = 1.50; // per mile
+    const timeRate = 0.30; // per minute
+    const serviceFee = 2.00;
+    const surgeMultiplier = Math.random() > 0.7 ? 1 + Math.random() : 1; // 30% chance of surge
+
+    const distanceCharge = distance * distanceRate;
+    const timeCharge = duration * timeRate;
+    const subtotal = (baseFare + distanceCharge + timeCharge + serviceFee) * surgeMultiplier;
+
+    return {
+      predicted_price: Number(subtotal.toFixed(2)),
+      details: {
+        estimated_distance: Number(distance.toFixed(2)),
+        estimated_duration: duration,
+        base_fare: baseFare,
+        distance_charge: Number(distanceCharge.toFixed(2)),
+        time_charge: Number(timeCharge.toFixed(2)),
+        service_fee: serviceFee,
+        surge_multiplier: Number(surgeMultiplier.toFixed(2))
+      }
+    };
+  } catch (error) {
+    console.error('Error calculating price prediction:', error);
+    throw error;
+  }
 }
