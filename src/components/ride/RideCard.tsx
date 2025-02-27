@@ -2,7 +2,7 @@
 import { RideOption } from "@/types/ride";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Car, Clock, Users } from "lucide-react";
+import { Car, Clock, Users, Timer } from "lucide-react";
 
 interface RideCardProps {
   ride: RideOption;
@@ -31,7 +31,11 @@ export const RideCard = ({ ride, onBook }: RideCardProps) => {
             <div className="flex items-center text-sm text-gray-500 space-x-4">
               <span className="flex items-center">
                 <Clock className="h-4 w-4 mr-1" />
-                {ride.time} min
+                {ride.eta} min wait
+              </span>
+              <span className="flex items-center">
+                <Timer className="h-4 w-4 mr-1" />
+                {ride.time} min travel
               </span>
               <span className="flex items-center">
                 <Users className="h-4 w-4 mr-1" />
