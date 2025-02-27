@@ -1,5 +1,7 @@
+
 import { RideSearch } from "@/components/RideSearch";
 import { HotelSearch } from "@/components/hotel/HotelSearch";
+import { RentalCarSearch } from "@/components/rental/RentalCarSearch";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Car, Link, Link2Off, Sparkles } from "lucide-react";
@@ -14,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 const Index = () => {
   const features = ["Google Flights", "DoorDash", "Skip", "Instacart"];
   const [currentFeature, setCurrentFeature] = useState(0);
-  const [activeTab, setActiveTab] = useState<'rides' | 'hotels'>('rides');
+  const [activeTab, setActiveTab] = useState<'rides' | 'hotels' | 'rentals'>('rides');
 
   const { data: connectedProviders, refetch: refetchProviders } = useQuery({
     queryKey: ['connected-providers'],
@@ -65,7 +67,7 @@ const Index = () => {
             Welcome to RideCompare
           </h1>
           <p className="text-sm text-gray-600 text-center max-w-sm">
-            Your journey begins here. Find and book rides and hotels with ease.
+            Your journey begins here. Find and book rides, rentals, and hotels with ease.
           </p>
 
           {activeTab === 'rides' && (
@@ -141,6 +143,12 @@ const Index = () => {
               Rides
             </Button>
             <Button
+              variant={activeTab === 'rentals' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('rentals')}
+            >
+              Rentals
+            </Button>
+            <Button
               variant={activeTab === 'hotels' ? 'default' : 'outline'}
               onClick={() => setActiveTab('hotels')}
             >
@@ -167,8 +175,10 @@ const Index = () => {
 
         {activeTab === 'rides' ? (
           <RideSearch />
-        ) : (
+        ) : activeTab === 'hotels' ? (
           <HotelSearch />
+        ) : (
+          <RentalCarSearch />
         )}
       </main>
       <BottomNav />
