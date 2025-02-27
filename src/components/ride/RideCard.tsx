@@ -12,6 +12,15 @@ interface RideCardProps {
 export const RideCard = ({ ride, onBook }: RideCardProps) => {
   const isPromo = ride.name.includes('(Promo)');
 
+  const formatTime = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    if (hours > 0) {
+      return `${hours}h ${remainingMinutes}min`;
+    }
+    return `${remainingMinutes}min`;
+  };
+
   return (
     <Card className="p-4 hover:shadow-lg transition-shadow">
       <div className="flex items-center justify-between">
@@ -35,7 +44,7 @@ export const RideCard = ({ ride, onBook }: RideCardProps) => {
               </span>
               <span className="flex items-center">
                 <Timer className="h-4 w-4 mr-1" />
-                {ride.time} min travel
+                {formatTime(ride.time)} travel
               </span>
               <span className="flex items-center">
                 <Users className="h-4 w-4 mr-1" />

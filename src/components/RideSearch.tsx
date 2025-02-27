@@ -55,18 +55,22 @@ export const RideSearch = () => {
         "Lyft XL": 1.45,
       };
 
+      // Generate random wait times between 3-12 minutes
+      const generateWaitTime = () => Math.floor(Math.random() * 10) + 3;
+
       // Apply the predicted price and adjustments
       return baseRideOptions.map(ride => {
         const multiplier = typeMultipliers[ride.type as keyof typeof typeMultipliers] || 1;
         const adjustedPrice = prediction.predicted_price * multiplier;
-        const estimatedDuration = prediction.details?.estimated_duration || ride.eta;
+        const travelTime = prediction.details?.estimated_duration || 0;
+        const waitTime = generateWaitTime(); // Separate wait time
 
         return {
           ...ride,
           price: Number(adjustedPrice.toFixed(2)),
           surge: prediction.details?.surge_multiplier > 1,
-          eta: estimatedDuration,
-          time: Math.round(estimatedDuration),
+          eta: waitTime, // Wait time for pickup
+          time: travelTime, // Actual travel time
         };
       });
     },
