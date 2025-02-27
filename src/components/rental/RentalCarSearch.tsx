@@ -172,6 +172,11 @@ export const RentalCarSearch = () => {
     }
   };
   
+  // Toggle filters visibility
+  const toggleFilters = () => {
+    setShowFilters(prev => !prev);
+  };
+  
   // Format date for display
   const formatDate = (date: Date) => {
     return format(date, "EEE, MMM d");
@@ -245,7 +250,7 @@ export const RentalCarSearch = () => {
                         {formatDate(pickupDate)}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
+                    <PopoverContent className="w-auto p-0 bg-white">
                       <Calendar
                         mode="single"
                         selected={pickupDate}
@@ -269,7 +274,7 @@ export const RentalCarSearch = () => {
                         {formatDate(returnDate)}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
+                    <PopoverContent className="w-auto p-0 bg-white">
                       <Calendar
                         mode="single"
                         selected={returnDate}
@@ -286,23 +291,23 @@ export const RentalCarSearch = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => setShowFilters(!showFilters)}
+                onClick={toggleFilters}
                 className="w-full flex items-center justify-center"
               >
                 <Filter className="h-4 w-4 mr-2" />
                 {showFilters ? "Hide Filters" : "Show Filters"}
               </Button>
               
-              {/* Filters */}
+              {/* Filters Section */}
               {showFilters && (
-                <div className="space-y-4 p-4 border rounded-md">
+                <div className="space-y-4 p-4 border rounded-md bg-white">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Car Type</label>
                     <Select value={carCategory} onValueChange={setCarCategory}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Any vehicle type" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white">
                         <SelectItem value="">Any vehicle type</SelectItem>
                         <SelectItem value="economy">Economy</SelectItem>
                         <SelectItem value="compact">Compact</SelectItem>
@@ -325,7 +330,7 @@ export const RentalCarSearch = () => {
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Sort by" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white">
                         <SelectItem value="price">Lowest Price</SelectItem>
                         <SelectItem value="rating">Highest Rating</SelectItem>
                       </SelectContent>
