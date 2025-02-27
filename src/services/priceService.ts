@@ -32,11 +32,12 @@ interface PricePrediction {
 async function getCoordinates(location: string): Promise<[number, number]> {
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`
+      `https://photon.komoot.io/api/?q=${encodeURIComponent(location)}&limit=1`
     );
     const data = await response.json();
-    if (data && data[0]) {
-      return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    if (data.features && data.features[0]) {
+      const coords = data.features[0].geometry.coordinates;
+      return [coords[1], coords[0]]; // Photon returns [lon, lat], we need [lat, lon]
     }
     throw new Error('Location not found');
   } catch (error) {
@@ -99,10 +100,7 @@ export async function getPricePrediction(pickup: string, dropoff: string): Promi
     return {
       predicted_price: Number(subtotal.toFixed(2)),
       details: {
-        estimated_distance: {
-          miles: distance.miles,
-          kilometers: distance.kilometers
-        },
+        estimated_distance: distance,
         estimated_duration: duration,
         base_fare: baseFare,
         distance_charge: Number(distanceCharge.toFixed(2)),

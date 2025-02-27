@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertTriangle, MapPin } from "lucide-react";
@@ -24,16 +24,22 @@ export const RideSearch = () => {
     queryKey: ["price-prediction", pickup, dropoff],
     queryFn: async () => {
       if (!pickup || !dropoff) return null;
-      console.log('Fetching prediction for:', pickup, dropoff);
-      const result = await getPricePrediction(pickup, dropoff);
-      console.log('Prediction result:', result);
-      return result;
+      try {
+        console.log('Fetching prediction for:', pickup, dropoff);
+        const result = await getPricePrediction(pickup, dropoff);
+        console.log('Prediction result:', result);
+        return result;
+      } catch (error) {
+        console.error('Error fetching prediction:', error);
+        toast.error('Could not get ride prediction');
+        return null;
+      }
     },
     enabled: !!(pickup && dropoff),
   });
 
   const { data: rides = [], isLoading: isLoadingRides, refetch: refetchRides } = useQuery({
-    queryKey: ["rides", pickup, dropoff],
+    queryKey: ["rides", pickup, dropoff, prediction?.predicted_price],
     queryFn: async () => {
       if (!prediction?.predicted_price) {
         return [];
@@ -53,16 +59,18 @@ export const RideSearch = () => {
       return baseRideOptions.map(ride => {
         const multiplier = typeMultipliers[ride.type as keyof typeof typeMultipliers] || 1;
         const adjustedPrice = prediction.predicted_price * multiplier;
+        const estimatedDuration = prediction.details?.estimated_duration || ride.eta;
 
         return {
           ...ride,
           price: Number(adjustedPrice.toFixed(2)),
           surge: prediction.details?.surge_multiplier > 1,
-          eta: prediction.details?.estimated_duration || ride.eta,
+          eta: estimatedDuration,
+          time: Math.round(estimatedDuration),
         };
       });
     },
-    enabled: false,
+    enabled: !!(prediction?.predicted_price),
   });
 
   const getCurrentLocation = () => {
@@ -72,7 +80,6 @@ export const RideSearch = () => {
         async (position) => {
           const { latitude, longitude } = position.coords;
           try {
-            // Reverse geocode the coordinates to get the address
             const response = await fetch(
               `https://photon.komoot.io/reverse?lon=${longitude}&lat=${latitude}`
             );
@@ -114,7 +121,12 @@ export const RideSearch = () => {
       return;
     }
     setIsSearching(true);
-    await refetchRides();
+    try {
+      await refetchRides();
+    } catch (error) {
+      console.error('Error searching rides:', error);
+      toast.error('Could not find rides for this route');
+    }
     setIsSearching(false);
   };
 
@@ -126,8 +138,38 @@ export const RideSearch = () => {
       appUrl = 'https://lyft.com/ride';
     }
 
+    // Add pickup and dropoff locations to the URL if available
+    if (pickupCoords && dropoffCoords) {
+      const params = new URLSearchParams({
+        pickup: `${pickupCoords[0]},${pickupCoords[1]}`,
+        dropoff: `${dropoffCoords[0]},${dropoffCoords[1]}`
+      });
+      appUrl += `?${params.toString()}`;
+    }
+
     window.open(appUrl, '_blank');
     toast.success(`Redirecting to ${ride.provider.toUpperCase()}`);
+  };
+
+  const getDistanceText = () => {
+    if (prediction?.details?.estimated_distance) {
+      const { miles, kilometers } = prediction.details.estimated_distance;
+      return `${miles.toFixed(1)} mi (${kilometers.toFixed(1)} km)`;
+    }
+    return null;
+  };
+
+  const getTimeText = () => {
+    if (prediction?.details?.estimated_duration) {
+      const minutes = prediction.details.estimated_duration;
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      if (hours > 0) {
+        return `${hours}h ${remainingMinutes}min`;
+      }
+      return `${remainingMinutes}min`;
+    }
+    return null;
   };
 
   return (
@@ -171,6 +213,17 @@ export const RideSearch = () => {
               onLocationSelect={setDropoffCoords}
             />
 
+            {prediction?.details && (
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                {getDistanceText() && (
+                  <span>Distance: {getDistanceText()}</span>
+                )}
+                {getTimeText() && (
+                  <span>Est. travel time: {getTimeText()}</span>
+                )}
+              </div>
+            )}
+
             {prediction?.details?.surge_multiplier > 1 && (
               <div className="flex items-center gap-2 p-2 bg-yellow-50 rounded-md">
                 <AlertTriangle className="h-5 w-5 text-yellow-600" />
@@ -183,10 +236,10 @@ export const RideSearch = () => {
             <Button 
               onClick={handleSearch} 
               className="w-full"
-              disabled={isSearching || isPredicting}
+              disabled={isSearching || isPredicting || !pickup || !dropoff}
             >
               {isSearching || isPredicting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
                 "Search Rides"
               )}
