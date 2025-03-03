@@ -12,6 +12,7 @@ import { connectProvider, disconnectProvider, getConnectedProviders } from "@/se
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
   const features = ["Google Flights", "DoorDash", "Skip", "Instacart"];
@@ -71,64 +72,80 @@ const Index = () => {
           </p>
 
           {activeTab === 'rides' && (
-            <div className="w-full max-w-md grid gap-4 mb-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Connected Accounts</CardTitle>
-                  <CardDescription>
-                    Connect your ride-sharing accounts to see personalized prices
-                  </CardDescription>
+            <div className="w-full max-w-md">
+              <Card className="bg-gradient-to-br from-white to-gray-50 shadow-md border border-gray-100 overflow-hidden">
+                <CardHeader className="py-3 px-4">
+                  <CardTitle className="text-sm font-medium text-gray-700 flex items-center">
+                    <div className="h-1.5 w-1.5 rounded-full bg-purple-500 mr-2"></div>
+                    Connected Accounts
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="p-2 rounded-full bg-black">
-                        <Car className="h-4 w-4 text-white" />
+                <CardContent className="py-2 px-4 flex flex-wrap gap-2">
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex gap-2">
+                      <div className={`flex items-center ${isConnected('uber') ? 'opacity-100' : 'opacity-70'}`}>
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center bg-black">
+                          <Car className="h-3 w-3 text-white" />
+                        </div>
+                        <span className="text-xs font-medium ml-1">Uber</span>
+                        {isConnected('uber') && (
+                          <Badge variant="success" className="ml-1 px-1.5 py-0 text-[10px]">
+                            Connected
+                          </Badge>
+                        )}
                       </div>
-                      <span className="font-medium">Uber</span>
-                    </div>
-                    <Button
-                      variant={isConnected('uber') ? "destructive" : "default"}
-                      onClick={() => isConnected('uber') ? handleDisconnect('uber') : handleConnect('uber')}
-                      size="sm"
-                    >
-                      {isConnected('uber') ? (
-                        <>
-                          <Link2Off className="mr-2 h-4 w-4" />
-                          Disconnect
-                        </>
-                      ) : (
-                        <>
-                          <Link className="mr-2 h-4 w-4" />
-                          Connect
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="p-2 rounded-full bg-pink-600">
-                        <Car className="h-4 w-4 text-white" />
+                      
+                      <div className={`flex items-center ml-4 ${isConnected('lyft') ? 'opacity-100' : 'opacity-70'}`}>
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center bg-pink-600">
+                          <Car className="h-3 w-3 text-white" />
+                        </div>
+                        <span className="text-xs font-medium ml-1">Lyft</span>
+                        {isConnected('lyft') && (
+                          <Badge variant="purple" className="ml-1 px-1.5 py-0 text-[10px]">
+                            Connected
+                          </Badge>
+                        )}
                       </div>
-                      <span className="font-medium">Lyft</span>
                     </div>
-                    <Button
-                      variant={isConnected('lyft') ? "destructive" : "default"}
-                      onClick={() => isConnected('lyft') ? handleDisconnect('lyft') : handleConnect('lyft')}
-                      size="sm"
-                    >
-                      {isConnected('lyft') ? (
-                        <>
-                          <Link2Off className="mr-2 h-4 w-4" />
-                          Disconnect
-                        </>
-                      ) : (
-                        <>
-                          <Link className="mr-2 h-4 w-4" />
+                    
+                    <div className="flex items-center gap-1">
+                      {!isConnected('uber') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => handleConnect('uber')}
+                        >
+                          <Link className="h-3 w-3 mr-1" />
                           Connect
-                        </>
+                        </Button>
                       )}
-                    </Button>
+                      {!isConnected('lyft') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => handleConnect('lyft')}
+                        >
+                          <Link className="h-3 w-3 mr-1" />
+                          Connect
+                        </Button>
+                      )}
+                      {(isConnected('uber') || isConnected('lyft')) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-xs bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                          onClick={() => {
+                            if (isConnected('uber')) handleDisconnect('uber');
+                            if (isConnected('lyft')) handleDisconnect('lyft');
+                          }}
+                        >
+                          <Link2Off className="h-3 w-3 mr-1" />
+                          Disconnect All
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

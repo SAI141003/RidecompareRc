@@ -3,6 +3,7 @@ import { RideOption } from "@/types/ride";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Car, Clock, Users, Timer } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface RideCardProps {
   ride: RideOption;
@@ -10,7 +11,7 @@ interface RideCardProps {
 }
 
 export const RideCard = ({ ride, onBook }: RideCardProps) => {
-  const isPromo = ride.name.includes('(Promo)');
+  const isPromo = ride.name.includes('(Connected Account)');
 
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -30,11 +31,11 @@ export const RideCard = ({ ride, onBook }: RideCardProps) => {
           </div>
           <div>
             <h3 className="font-semibold flex items-center gap-2">
-              {ride.name}
+              {ride.name.replace('(Connected Account)', '')}
               {isPromo && (
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                <Badge variant="purple" className="text-[10px]">
                   Connected Account
-                </span>
+                </Badge>
               )}
             </h3>
             <div className="flex items-center text-sm text-gray-500 space-x-4">
