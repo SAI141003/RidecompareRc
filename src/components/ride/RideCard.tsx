@@ -30,11 +30,11 @@ export const RideCard = ({ ride, onBook }: RideCardProps) => {
             <Car className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold flex items-center gap-2">
+            <h3 className="font-semibold flex items-center gap-1">
               {ride.name.replace('(Connected Account)', '')}
               {isPromo && (
-                <Badge variant="purple" className="text-[10px]">
-                  Connected Account
+                <Badge variant="connected" className="scale-90 ml-1">
+                  Connected
                 </Badge>
               )}
             </h3>

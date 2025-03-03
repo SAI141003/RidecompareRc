@@ -24,6 +24,8 @@ const badgeVariants = cva(
           "border-transparent bg-amber-100 text-amber-800 hover:bg-amber-200/80",
         purple: 
           "border-transparent bg-purple-100 text-purple-800 hover:bg-purple-200/80",
+        connected: 
+          "border-transparent bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 text-[10px] py-0.5 px-2",
       },
     },
     defaultVariants: {
