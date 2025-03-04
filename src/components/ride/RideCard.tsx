@@ -24,7 +24,7 @@ export const RideCard = ({ ride, onBook }: RideCardProps) => {
 
   return (
     <Card className="p-4 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center space-x-4">
           <div className={`p-2 rounded-full ${ride.provider === 'uber' ? 'bg-black' : 'bg-pink-600'}`}>
             <Car className="h-6 w-6 text-white" />
@@ -38,7 +38,7 @@ export const RideCard = ({ ride, onBook }: RideCardProps) => {
                 </Badge>
               )}
             </h3>
-            <div className="flex items-center text-sm text-gray-500 space-x-4">
+            <div className="flex flex-wrap items-center text-sm text-gray-500 gap-x-4 gap-y-1 mt-1">
               <span className="flex items-center">
                 <Clock className="h-4 w-4 mr-1" />
                 {ride.eta} min wait
@@ -54,14 +54,14 @@ export const RideCard = ({ ride, onBook }: RideCardProps) => {
             </div>
           </div>
         </div>
-        <div className="text-right">
+        <div className="flex items-center justify-between sm:flex-col sm:items-end mt-2 sm:mt-0">
           <div className="text-lg font-semibold">
             ${ride.price.toFixed(2)}
           </div>
           <Button
             size="sm"
             onClick={() => onBook(ride)}
-            className="mt-2"
+            className="ml-auto sm:ml-0 sm:mt-2"
           >
             Book Now
           </Button>
