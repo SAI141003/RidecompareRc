@@ -1,5 +1,5 @@
 # RideCompare RC – AI-Powered Ride Comparison Platform
-
+https://ridecomparerc.netlify.app/
 **RideCompare RC** is a comprehensive ride comparison and booking platform that allows users to compare rides across multiple providers (Uber, Lyft, etc.), predict ride prices, optimize routes, and make smart transportation decisions. The app integrates AI-driven features, interactive maps, and real-time data to provide an enhanced user experience.
 
 ---
